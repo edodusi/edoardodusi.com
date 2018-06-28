@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css?family=Nova+Mono');
+@import url('https://fonts.googleapis.com/css?family=Great+Vibes');
+
+body {
+  background-color: darkslategray;
+  color: mintcream;
+  max-width: 640px;
+  border-right: 1px dashed dimgrey;
+}
+
+article {
+  padding: 20px;
+}
+
+h1 {
+  font-family: 'Great Vibes', cursive;
+  font-size: 4rem;
+}
+
+p {
+  font-family: 'Nova Mono', monospace;
+  font-size: 2rem;
+}
+
+span {
+  color: coral;
+}
+
+a {
+  display: inline-block;
+  margin: 0 5px;
+  text-decoration: none;
+}
+
+a img {
+  max-height: 3rem;
+}
+
+.contacts {
+  margin-left: -10px;
+}
