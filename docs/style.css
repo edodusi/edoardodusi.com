@@ -2,10 +2,9 @@
 @import url('https://fonts.googleapis.com/css?family=Great+Vibes');
 
 body {
-  background-color: darkslategray;
+  background-color: slategrey;
   color: mintcream;
   max-width: 640px;
-  border-right: 1px dashed dimgrey;
 }
 
 article {
