@@ -8,8 +8,8 @@
   <!-- Fonts and styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v2" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v4" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/profile_images/2562656672/os1isss5y1dfc36u6aiy_normal.jpeg" />
@@ -19,31 +19,15 @@
     <div class="scanlines" aria-hidden="true"></div>
 
     <header class="header">
-      <div class="logo">
+      <div class="logo" id="logo-trigger">
         <div class="pixel-border">
           <h1>EDOARDO DUSI</h1>
           <div class="subtitle">LEVEL 99 DEVELOPER</div>
+          <div class="hover-hint">Hover for socials</div>
         </div>
       </div>
 
-      <!-- Socials prominently placed under header -->
-      <section id="social" class="social-menu" aria-label="Social links">
-        <h2>Connect — Socials</h2>
-        <div class="menu-items">
-          <a href="https://github.com/edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
-            <span class="menu-arrow">▶</span> GitHub
-          </a>
-          <a href="https://www.linkedin.com/in/edoardodusi/" class="menu-item" target="_blank" rel="me noopener noreferrer">
-            <span class="menu-arrow">▶</span> LinkedIn
-          </a>
-          <a href="https://hachyderm.io/@edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
-            <span class="menu-arrow">▶</span> Mastodon
-          </a>
-          <a href="https://youtube.com/@edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
-            <span class="menu-arrow">▶</span> YouTube
-          </a>
-        </div>
-      </section>
+
     </header>
 
     <main class="main-content">
@@ -72,13 +56,69 @@
     </main>
 
     <footer class="credits">
-      <p>© 2024 Edoardo Dusi. All rights reserved.</p>
+      <p>© 2024 Edoardo Dusi. No rights reserved.</p>
     </footer>
   </div>
 
+  <!-- Social Modal -->
+  <div id="social-modal" class="social-modal">
+    <div class="modal-content">
+      <h2>CONNECT — SOCIALS</h2>
+      <div class="modal-menu-items">
+        <a href="https://github.com/edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
+          <span class="menu-arrow">▶</span> GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/edoardodusi/" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
+          <span class="menu-arrow">▶</span> LinkedIn
+        </a>
+        <a href="https://hachyderm.io/@edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
+          <span class="menu-arrow">▶</span> Mastodon
+        </a>
+        <a href="https://youtube.com/@edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
+          <span class="menu-arrow">▶</span> YouTube
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Small interactive touches for retro feel
+    // Interactive effects for retro feel
     document.addEventListener('DOMContentLoaded', function () {
+      // Social modal functionality
+      const logoTrigger = document.getElementById('logo-trigger');
+      const socialModal = document.getElementById('social-modal');
+      let modalTimeout;
+
+      if (logoTrigger && socialModal) {
+        logoTrigger.addEventListener('mouseenter', function () {
+          clearTimeout(modalTimeout);
+          socialModal.style.display = 'flex';
+          setTimeout(() => {
+            socialModal.classList.add('show');
+          }, 10);
+        });
+
+        logoTrigger.addEventListener('mouseleave', function () {
+          modalTimeout = setTimeout(() => {
+            socialModal.classList.remove('show');
+            setTimeout(() => {
+              socialModal.style.display = 'none';
+            }, 300);
+          }, 500);
+        });
+
+        socialModal.addEventListener('mouseenter', function () {
+          clearTimeout(modalTimeout);
+        });
+
+        socialModal.addEventListener('mouseleave', function () {
+          socialModal.classList.remove('show');
+          setTimeout(() => {
+            socialModal.style.display = 'none';
+          }, 300);
+        });
+      }
+
       // Blinking border on the dialogue box
       const dialogue = document.querySelector('.dialogue-box');
       if (dialogue) {
