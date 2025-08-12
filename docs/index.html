@@ -1,97 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Edoardo Dusi - Developer</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Fonts and styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v2" />
+
+  <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/profile_images/2562656672/os1isss5y1dfc36u6aiy_normal.jpeg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="game-container">
-    <div class="scanlines"></div>
-    <div class="header">
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="header">
       <div class="logo">
         <div class="pixel-border">
           <h1>EDOARDO DUSI</h1>
           <div class="subtitle">LEVEL 99 DEVELOPER</div>
         </div>
       </div>
-    </div>
 
-    <div class="main-content">
-      <div class="status-bar">
-        <div class="health">HP: ████████████</div>
-        <div class="mana">MP: ████████████</div>
-        <div class="exp">EXP: ████████████</div>
-      </div>
-
-      <div class="character-box">
-        <div class="character-sprite">👨‍💻</div>
-        <div class="dialogue-box">
-          <p>Hello! I'm a passionate developer crafting digital experiences.</p>
-          <p>Ready for your next quest?</p>
-        </div>
-      </div>
-
-      <div class="social-menu">
-        <h2>CONNECT</h2>
+      <!-- Socials prominently placed under header -->
+      <section id="social" class="social-menu" aria-label="Social links">
+        <h2>Connect — Socials</h2>
         <div class="menu-items">
-          <a href="https://github.com/edodusi" class="menu-item" target="_blank" rel="noopener">
+          <a href="https://github.com/edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
             <span class="menu-arrow">▶</span> GitHub
           </a>
-          <a href="https://www.linkedin.com/in/edoardodusi/" class="menu-item" target="_blank" rel="noopener">
+          <a href="https://www.linkedin.com/in/edoardodusi/" class="menu-item" target="_blank" rel="me noopener noreferrer">
             <span class="menu-arrow">▶</span> LinkedIn
           </a>
-          <a href="https://hachyderm.io/@edodusi" class="menu-item" target="_blank" rel="noopener">
-
+          <a href="https://hachyderm.io/@edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
             <span class="menu-arrow">▶</span> Mastodon
           </a>
-          <a href="https://youtube.com/@edodusi" class="menu-item" target="_blank" rel="noopener">
+          <a href="https://youtube.com/@edodusi" class="menu-item" target="_blank" rel="me noopener noreferrer">
             <span class="menu-arrow">▶</span> YouTube
           </a>
         </div>
+      </section>
+    </header>
+
+    <main class="main-content">
+      <div class="status-bar" aria-hidden="true">
+        <div class="health">HEALTH: ████████████</div>
+        <div class="armor">ARMOR: ████████████</div>
+        <div class="ammo">AMMO: ████████████</div>
       </div>
 
-      <div class="footer-menu">
+      <section class="character-box" aria-label="Introduction">
+        <div class="character-sprite" aria-hidden="true">😎</div>
+        <div class="dialogue-box">
+          <p>Hello! I'm a passionate developer crafting digital experiences.</p>
+          <p>Ready to code and conquer?</p>
+        </div>
+      </section>
+
+      <section class="footer-menu" aria-label="Projects">
+        <h2>Projects</h2>
         <div class="menu-items">
           <a href="/coderoutine" class="menu-item">
             <span class="menu-arrow">▶</span> CodeRoutine App
           </a>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
-    <div class="credits">
-      <p>© 2024 EDOARDO DUSI - NO RIGHTS RESERVED</p>
-    </div>
+    <footer class="credits">
+      <p>© 2024 Edoardo Dusi. All rights reserved.</p>
+    </footer>
   </div>
 
   <script>
-    // Add some retro interactive effects
-    document.addEventListener('DOMContentLoaded', function() {
-      const menuItems = document.querySelectorAll('.menu-item');
-
-      menuItems.forEach(item => {
-        item.addEventListener('mouseenter', function() {
-          this.style.backgroundColor = '#00ff00';
-          this.style.color = '#000';
-        });
-
-        item.addEventListener('mouseleave', function() {
-          this.style.backgroundColor = 'transparent';
-          this.style.color = '#00ff00';
-        });
-      });
-
-      // Blinking cursor effect for dialogue
+    // Small interactive touches for retro feel
+    document.addEventListener('DOMContentLoaded', function () {
+      // Blinking border on the dialogue box
       const dialogue = document.querySelector('.dialogue-box');
-      setInterval(() => {
-        dialogue.style.borderColor = dialogue.style.borderColor === 'transparent' ? '#00ff00' : 'transparent';
-      }, 1000);
+      if (dialogue) {
+        setInterval(() => {
+          const current = getComputedStyle(dialogue).borderColor;
+          dialogue.style.borderColor =
+            (current === 'rgba(0, 0, 0, 0)' || current === 'transparent') ? '#ff4444' : 'transparent';
+        }, 900);
+      }
+
+      // Random CRT flicker effect
+      const container = document.querySelector('.game-container');
+      if (container) {
+        setInterval(() => {
+          if (Math.random() < 0.12) {
+            container.style.filter = 'brightness(0.95) contrast(1.05)';
+            setTimeout(() => {
+              container.style.filter = '';
+            }, 60);
+          }
+        }, 1800);
+      }
     });
   </script>
 </body>
