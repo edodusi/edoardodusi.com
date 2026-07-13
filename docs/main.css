@@ -1,0 +1,326 @@
+/* ---------------------------------------------------------------------------
+   edoardodusi.com — minimal, elegant, fast.
+   No external requests: system fonts, inline icons.
+--------------------------------------------------------------------------- */
+
+:root {
+  --bg: #faf9f7;
+  --fg: #1a1a1a;
+  --muted: #6b6a66;
+  --faint: #9c9a94;
+  --line: rgba(26, 26, 26, 0.1);
+  --accent: #0f766e;
+  --accent-soft: rgba(15, 118, 110, 0.08);
+  --nav-bg: rgba(250, 249, 247, 0.82);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #121314;
+  --fg: #eceae6;
+  --muted: #a3a19b;
+  --faint: #737169;
+  --line: rgba(236, 234, 230, 0.12);
+  --accent: #4fd1c5;
+  --accent-soft: rgba(79, 209, 197, 0.09);
+  --nav-bg: rgba(18, 19, 20, 0.82);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+a:hover, a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 0.5rem 1rem;
+  z-index: 100;
+}
+.skip-link:focus { left: 0; }
+
+/* --- Nav ------------------------------------------------------------------ */
+
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.site-nav {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); transform: rotate(15deg); }
+
+:root[data-theme="light"] .icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: none; }
+
+/* --- Layout --------------------------------------------------------------- */
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* --- Hero ------------------------------------------------------------------ */
+
+.hero { padding: 5.5rem 0 4rem; }
+
+.kicker {
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 0.75rem;
+}
+
+.hero h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: clamp(2.6rem, 7vw, 3.8rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.tagline {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.tagline a { text-decoration-color: var(--accent); }
+
+.intro {
+  color: var(--muted);
+  max-width: 38rem;
+}
+
+/* --- Sections --------------------------------------------------------------- */
+
+.section {
+  padding: 3rem 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 3.5rem; /* keep headings clear of the sticky nav */
+}
+
+.section h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.section-num {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: 0;
+}
+
+.year {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.05rem;
+  color: var(--faint);
+  margin: 1.75rem 0 0.5rem;
+}
+
+.year:first-of-type { margin-top: 0; }
+
+/* --- Rows ------------------------------------------------------------------ */
+
+.stack { list-style: none; }
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.8rem 0;
+}
+
+.row + .row { border-top: 1px solid var(--line); }
+
+.row-main a, .talk { font-weight: 500; }
+
+.row-main a { text-decoration: none; }
+.row-main a:hover, .row-main a:focus-visible { color: var(--accent); }
+
+.row-main p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+}
+
+.venue a {
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+}
+
+.sublinks { display: block; margin-top: 0.3rem; font-size: 0.85rem; }
+.sublinks a { color: var(--accent); text-decoration: none; }
+.sublinks a:hover { text-decoration: underline; }
+
+.row-meta {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+.more {
+  margin-top: 1.75rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* --- Link grid ---------------------------------------------------------------- */
+
+.link-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.link-grid a {
+  display: block;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.link-grid a:hover, .link-grid a:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* --- Footer -------------------------------------------------------------------- */
+
+.site-foot {
+  border-top: 1px solid var(--line);
+  margin-top: 3rem;
+}
+
+.site-foot p {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  font-size: 0.85rem;
+  color: var(--faint);
+}
+
+/* --- Reveal animation ------------------------------------------------------------ */
+
+/* Hidden state only applies once JS confirms it can reveal (.reveal-ready),
+   so content always shows if the script fails to load. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .reveal-ready .reveal.is-visible { opacity: 1; transform: none; }
+}
+
+/* --- Responsive -------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .hero { padding: 3.5rem 0 3rem; }
+  .row { flex-direction: column; gap: 0.15rem; }
+  .link-grid { grid-template-columns: repeat(2, 1fr); }
+}

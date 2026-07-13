@@ -3,145 +3,261 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edoardo Dusi - Developer</title>
+  <title>Edoardo Dusi — Developer Relations</title>
+  <meta name="description" content="Edoardo Dusi is a DevRel Team Manager at Storyblok, podcaster, conference speaker, and writer based in Bologna, Italy." />
+  <link rel="canonical" href="https://edoardodusi.com/" />
 
-  <!-- Fonts and styles -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v4" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Edoardo Dusi — Developer Relations" />
+  <meta property="og:description" content="DevRel Team Manager at Storyblok. Podcaster, speaker, and writer based in Bologna, Italy." />
+  <meta property="og:url" content="https://edoardodusi.com/" />
+  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/profile_images/2562656672/os1isss5y1dfc36u6aiy_normal.jpeg" />
-</head>
-<body>
-  <div class="game-container">
-    <div class="scanlines" aria-hidden="true"></div>
-
-    <header class="header">
-      <div class="logo" id="logo-trigger">
-        <div class="pixel-border">
-          <h1>EDOARDO DUSI</h1>
-          <div class="subtitle">LEVEL 99 DEVELOPER</div>
-          <div class="hover-hint">Hover for socials</div>
-        </div>
-      </div>
-
-
-    </header>
-
-    <main class="main-content">
-      <div class="status-bar" aria-hidden="true">
-        <div class="health">HEALTH: ████████████</div>
-        <div class="armor">ARMOR: ████████████</div>
-        <div class="ammo">AMMO: ████████████</div>
-      </div>
-
-      <section class="character-box" aria-label="Introduction">
-        <div class="character-sprite" aria-hidden="true">😎</div>
-        <div class="dialogue-box">
-          <p>Hello! I'm a passionate developer crafting digital experiences.</p>
-          <p>Ready to code and conquer?</p>
-        </div>
-      </section>
-
-      <section class="footer-menu" aria-label="Projects">
-        <h2>Projects</h2>
-        <div class="menu-items">
-          <a href="/coderoutine" class="menu-item">
-            <span class="menu-arrow">▶</span> CodeRoutine App
-          </a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="credits">
-      <p>© 2024 Edoardo Dusi. No rights reserved.</p>
-    </footer>
-  </div>
-
-  <!-- Social Modal -->
-  <div id="social-modal" class="social-modal">
-    <div class="modal-content">
-      <h2>CONNECT — SOCIALS</h2>
-      <div class="modal-menu-items">
-        <a href="https://github.com/edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
-          <span class="menu-arrow">▶</span> GitHub
-        </a>
-        <a href="https://www.linkedin.com/in/edoardodusi/" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
-          <span class="menu-arrow">▶</span> LinkedIn
-        </a>
-        <a href="https://hachyderm.io/@edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
-          <span class="menu-arrow">▶</span> Mastodon
-        </a>
-        <a href="https://youtube.com/@edodusi" class="modal-menu-item" target="_blank" rel="me noopener noreferrer">
-          <span class="menu-arrow">▶</span> YouTube
-        </a>
-      </div>
-    </div>
-  </div>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f766e'/%3E%3Ctext x='50' y='68' font-size='52' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3Ee%3C/text%3E%3C/svg%3E" />
 
   <script>
-    // Interactive effects for retro feel
-    document.addEventListener('DOMContentLoaded', function () {
-      // Social modal functionality
-      const logoTrigger = document.getElementById('logo-trigger');
-      const socialModal = document.getElementById('social-modal');
-      let modalTimeout;
-
-      if (logoTrigger && socialModal) {
-        logoTrigger.addEventListener('mouseenter', function () {
-          clearTimeout(modalTimeout);
-          socialModal.style.display = 'flex';
-          setTimeout(() => {
-            socialModal.classList.add('show');
-          }, 10);
-        });
-
-        logoTrigger.addEventListener('mouseleave', function () {
-          modalTimeout = setTimeout(() => {
-            socialModal.classList.remove('show');
-            setTimeout(() => {
-              socialModal.style.display = 'none';
-            }, 300);
-          }, 500);
-        });
-
-        socialModal.addEventListener('mouseenter', function () {
-          clearTimeout(modalTimeout);
-        });
-
-        socialModal.addEventListener('mouseleave', function () {
-          socialModal.classList.remove('show');
-          setTimeout(() => {
-            socialModal.style.display = 'none';
-          }, 300);
-        });
-      }
-
-      // Blinking border on the dialogue box
-      const dialogue = document.querySelector('.dialogue-box');
-      if (dialogue) {
-        setInterval(() => {
-          const current = getComputedStyle(dialogue).borderColor;
-          dialogue.style.borderColor =
-            (current === 'rgba(0, 0, 0, 0)' || current === 'transparent') ? '#ff4444' : 'transparent';
-        }, 900);
-      }
-
-      // Random CRT flicker effect
-      const container = document.querySelector('.game-container');
-      if (container) {
-        setInterval(() => {
-          if (Math.random() < 0.12) {
-            container.style.filter = 'brightness(0.95) contrast(1.05)';
-            setTimeout(() => {
-              container.style.filter = '';
-            }, 60);
-          }
-        }, 1800);
-      }
-    });
+    (function () {
+      var stored = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme');
+      var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
   </script>
+  <link rel="stylesheet" href="main.css?v1" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Edoardo Dusi",
+    "url": "https://edoardodusi.com",
+    "jobTitle": "DevRel Team Manager",
+    "worksFor": { "@type": "Organization", "name": "Storyblok", "url": "https://www.storyblok.com" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Bologna", "addressCountry": "IT" },
+    "sameAs": [
+      "https://github.com/edodusi",
+      "https://www.linkedin.com/in/edoardodusi/",
+      "https://hachyderm.io/@edodusi",
+      "https://www.youtube.com/@edodusi",
+      "https://www.instagram.com/edodusi/",
+      "https://dev.to/edodusi",
+      "https://sessionize.com/edodusi/"
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#work">Skip to content</a>
+
+  <header class="site-head">
+    <nav class="site-nav" aria-label="Sections">
+      <a class="brand" href="#top">edo</a>
+      <div class="nav-links">
+        <a href="#work">Work</a>
+        <a href="#podcast">Podcast</a>
+        <a href="#writing">Writing</a>
+        <a href="#speaking">Speaking</a>
+        <a href="#elsewhere">Elsewhere</a>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch color theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <section class="hero reveal">
+      <p class="kicker">Bologna, Italy</p>
+      <h1>Edoardo Dusi</h1>
+      <p class="tagline">I lead Developer Relations &amp; Community at <a href="https://www.storyblok.com" rel="noopener">Storyblok</a>.</p>
+      <p class="intro">
+        Engineer turned Developer Advocate after decades of building for the web. I speak at
+        conferences around Europe, write about JavaScript, open source, software architecture
+        and cybersecurity, and host an Italian tech-news podcast.
+      </p>
+    </section>
+
+    <section id="work" class="section reveal">
+      <h2><span class="section-num">01</span>Work</h2>
+      <ol class="stack">
+        <li class="row">
+          <div class="row-main">
+            <a href="https://www.storyblok.com" rel="noopener">Storyblok</a>
+            <p>DevRel Team Manager — leading the Developer Relations &amp; Community team of the headless CMS. SDKs, developer content, community, and conference stages.</p>
+          </div>
+          <span class="row-meta">2024 — now</span>
+        </li>
+        <li class="row">
+          <div class="row-main">
+            <a href="https://www.sparkfabrik.com" rel="noopener">SparkFabrik</a>
+            <p>Backend Engineer, Frontend Engineer, then Lead Developer, and finally the company's first Developer Relations Engineer.</p>
+          </div>
+          <span class="row-meta">— 2024</span>
+        </li>
+      </ol>
+    </section>
+
+    <section id="podcast" class="section reveal">
+      <h2><span class="section-num">02</span>Podcast</h2>
+      <ol class="stack">
+        <li class="row">
+          <div class="row-main">
+            <a href="https://open.spotify.com/show/4B2I1RTHTS5YkbCYfLCveU" rel="noopener">Buongiorno da Edo</a>
+            <p>A few minutes on a tech story that caught my eye: coding, AI, open source, security, the internet. In Italian, 300+ episodes and counting.
+              <span class="sublinks"><a href="https://open.spotify.com/show/4B2I1RTHTS5YkbCYfLCveU" rel="noopener">Spotify</a> · <a href="https://podcasts.apple.com/us/podcast/buongiorno-da-edo/id1641061765" rel="noopener">Apple Podcasts</a> · <a href="https://www.youtube.com/playlist?list=PLCQLaXN5zs956lPTQ4TrBFHJjHKqezoXe" rel="noopener">YouTube</a></span>
+            </p>
+          </div>
+          <span class="row-meta">2022 — now</span>
+        </li>
+        <li class="row">
+          <div class="row-main">
+            <a href="https://open.spotify.com/show/1xNXGXiZzazwqKycTS8WyG" rel="noopener">Continuous Delivery</a>
+            <p>Weekly Italian podcast with guests I made with SparkFabrik: web development, DevOps, and cloud native. 105 episodes, concluded with a “Final Delivery.”
+              <span class="sublinks"><a href="https://open.spotify.com/show/1xNXGXiZzazwqKycTS8WyG" rel="noopener">Spotify</a> · <a href="https://podcasts.apple.com/it/podcast/continuous-delivery/id1541007956" rel="noopener">Apple Podcasts</a> · <a href="https://www.youtube.com/@ContinuousDeliverySpark" rel="noopener">YouTube</a></span>
+            </p>
+          </div>
+          <span class="row-meta">2020 — 2024</span>
+        </li>
+      </ol>
+    </section>
+
+    <section id="writing" class="section reveal">
+      <h2><span class="section-num">03</span>Writing</h2>
+
+      <h3 class="year">2026</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/how-we-analyze-content-performance-with-claude-code-storyblok-and-posthog" rel="noopener">How We Analyze Content Performance With Claude Code, Storyblok, and PostHog</a><p class="venue">Storyblok</p></div><span class="row-meta">Jul 2026</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/how-to-build-a-rag-pipeline-with-weaviate-and-ollama" rel="noopener">How to Build a RAG Pipeline With Weaviate and Ollama</a><p class="venue">Storyblok</p></div><span class="row-meta">Apr 2026</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/storyblok-php-libraries-kick-off-2026-cdn-proxy-image-service-and-less-boilerplate" rel="noopener">Storyblok PHP Libraries Kick Off 2026</a><p class="venue">Storyblok</p></div><span class="row-meta">Feb 2026</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/build-a-semantic-search-engine-from-scratch" rel="noopener">Build a Semantic Search Engine From Scratch</a><p class="venue">Storyblok</p></div><span class="row-meta">Feb 2026</span></li>
+      </ol>
+
+      <h3 class="year">2025</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/what-s-the-big-deal-with-vector-databases" rel="noopener">What’s the Big Deal With Vector Databases?</a><p class="venue">Storyblok</p></div><span class="row-meta">Dec 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/storyblok-svelte-sdk-updated-to-v5-with-lots-of-new-features" rel="noopener">Announcing Storyblok Svelte SDK v5</a><p class="venue">Storyblok</p></div><span class="row-meta">Apr 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.smashingmagazine.com/2025/04/building-drupal-storyblok-migration-tool-engineering-perspective/" rel="noopener">Building a Drupal to Storyblok Migration Tool: An Engineering Perspective</a><p class="venue">Smashing Magazine</p></div><span class="row-meta">Apr 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/storyblok-unveils-new-php-packages" rel="noopener">Storyblok Unveils New PHP Packages With SensioLabs</a><p class="venue">Storyblok</p></div><span class="row-meta">Mar 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://thenewstack.io/the-metamorphosis-of-open-source-an-industry-in-transition/" rel="noopener">The Metamorphosis of Open Source: An Industry in Transition</a><p class="venue">The New Stack</p></div><span class="row-meta">Feb 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.smashingmagazine.com/2025/02/integrations-from-simple-data-transfer-to-composable-architectures/" rel="noopener">Integrations: From Simple Data Transfer to Modern Composable Architectures</a><p class="venue">Smashing Magazine</p></div><span class="row-meta">Feb 2025</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.guerredirete.it/come-tracciare-la-sicurezza-della-software-supply-chain/" rel="noopener">Come tracciare la sicurezza della software supply chain</a><p class="venue">Guerre di Rete</p></div><span class="row-meta">Jan 2025</span></li>
+      </ol>
+
+      <h3 class="year">2024</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><a href="https://dev.to/storyblok/symfonycon-vienna-2024-recap-of-our-experience-mj0" rel="noopener">SymfonyCon Vienna 2024: Recap of Our Experience</a><p class="venue">dev.to</p></div><span class="row-meta">Dec 2024</span></li>
+        <li class="row"><div class="row-main"><a href="https://www.storyblok.com/mp/announcing-react-sdk-v4-with-full-support-for-react-server-components" rel="noopener">Announcing React SDK v4 With Full Support for React Server Components</a><p class="venue">Storyblok</p></div><span class="row-meta">Nov 2024</span></li>
+        <li class="row"><div class="row-main"><a href="https://openssf.org/blog/2024/05/08/drubom-an-sbom-for-drupal/" rel="noopener">DruBOM: An SBOM for Drupal</a><p class="venue">OpenSSF</p></div><span class="row-meta">May 2024</span></li>
+        <li class="row"><div class="row-main"><a href="https://dev.to/sparkfabrik/how-and-why-to-contribute-to-open-source-1i9a" rel="noopener">How (and Why) to Contribute to Open Source</a><p class="venue">SparkFabrik</p></div><span class="row-meta">Feb 2024</span></li>
+        <li class="row"><div class="row-main"><a href="https://dev.to/sparkfabrik/journey-to-the-center-of-devrel-part-1-4k10" rel="noopener">Journey to the Center of DevRel</a><p class="venue">SparkFabrik</p></div><span class="row-meta">Jan 2024</span></li>
+      </ol>
+
+      <h3 class="year">2023</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><a href="https://dev.to/sparkfabrik/oscm-the-open-source-consumption-manifesto-b3o" rel="noopener">OSCM: The Open Source Consumption Manifesto</a><p class="venue">SparkFabrik</p></div><span class="row-meta">Sep 2023</span></li>
+        <li class="row"><div class="row-main"><a href="https://dev.to/sparkfabrik/what-is-an-ospo-and-why-is-it-important-4i" rel="noopener">What Is an OSPO and Why Is It Important?</a><p class="venue">SparkFabrik</p></div><span class="row-meta">Aug 2023</span></li>
+        <li class="row"><div class="row-main"><a href="https://dev.to/sparkfabrik/introduction-to-qwik-and-the-power-of-loaders-and-actions-33pm" rel="noopener">Introduction to Qwik and the Power of Loaders and Actions</a><p class="venue">SparkFabrik</p></div><span class="row-meta">Aug 2023</span></li>
+      </ol>
+    </section>
+
+    <section id="speaking" class="section reveal">
+      <h2><span class="section-num">04</span>Speaking</h2>
+
+      <h3 class="year">2026</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><span class="talk">Total Recall: quando il RAG chatbot inventa fatti</span><p class="venue"><a href="https://www.codemotion.com/magazine/it/dev-life-it/eventi/i-primi-speaker-di-codemotion-roma-2026-lai-esce-dal-laboratorio/" rel="noopener">Codemotion Roma</a> · Rome</p></div><span class="row-meta">2026</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Master of Ceremonies</span><p class="venue"><a href="https://www.jsday.it/" rel="noopener">jsday</a> · Bologna</p></div><span class="row-meta">2026</span></li>
+      </ol>
+
+      <h3 class="year">2025</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><span class="talk">Bundlers: A Deep Dive Into Modern JavaScript Build Tools</span><p class="venue"><a href="https://archive.oredev.org/2025/#/" rel="noopener">Øredev</a> · Malmö — <a href="https://www.youtube.com/watch?v=VMavsRrMxHg" rel="noopener">watch</a></p></div><span class="row-meta">Nov 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Honey, I Shrunk the Bits: How Modern HTTP Compression Works</span><p class="venue"><a href="https://archive.oredev.org/2025/#/" rel="noopener">Øredev</a> · Malmö — <a href="https://www.youtube.com/watch?v=ukVdQUttvWE" rel="noopener">watch</a></p></div><span class="row-meta">Nov 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Frictionless Frontend: Next.js, Storyblok, and Netlify</span><p class="venue"><a href="https://www.storyblok.com/joyconf/2025/amsterdam" rel="noopener">JoyConf</a> · Amsterdam — <a href="https://www.storyblok.com/joyconf/2025/amsterdam#event-agenda-session-modal-12b8a606-b7ea-47e8-959c-6452920e9c28" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">You Build React Apps: Do You Even Know How?</span><p class="venue"><a href="https://www.reactjsday.it/speaker/edoardo-dusi/" rel="noopener">reactjsday</a> · Verona — <a href="https://www.youtube.com/watch?v=Cud-QdcEyAM" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Open Source: From Revolution to Evolution</span><p class="venue"><a href="https://devfest.modena.it/speakers/edoardo-dusi/" rel="noopener">DevFest Modena</a> · Modena</p></div><span class="row-meta">Oct 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Honey, I Shrunk the Bits: How Modern HTTP Compression Works</span><p class="venue"><a href="https://www.cometocode.it/" rel="noopener">Come To Code</a> · Pignola — <a href="https://www.youtube.com/watch?v=3pVpI9NEoMU" rel="noopener">watch</a></p></div><span class="row-meta">Sep 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Bundlers: A Deep Dive Into Modern JavaScript Build Tools</span><p class="venue"><a href="https://jsnation.com/2025/" rel="noopener">JSNation</a> · Amsterdam — <a href="https://gitnation.com/contents/bundlers-a-deep-dive-into-modern-javascript-build-tools" rel="noopener">watch</a></p></div><span class="row-meta">Jun 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Server Components Wars: PHP Strikes Back</span><p class="venue"><a href="https://reactsummit.com/2025/" rel="noopener">React Summit</a> · Amsterdam — <a href="https://gitnation.com/contents/server-components-wars-php-strikes-back" rel="noopener">watch</a></p></div><span class="row-meta">Jun 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Open Source: From Revolution to Evolution</span><p class="venue"><a href="https://www.phpday.it/speaker/edoardodusi/" rel="noopener">phpday</a> · Verona — <a href="https://www.youtube.com/watch?v=fuTcLwz2hqY" rel="noopener">watch</a></p></div><span class="row-meta">May 2025</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Bundlers: A Deep Dive Into Modern JavaScript Build Tools</span><p class="venue"><a href="https://app.swapcard.com/event/devworld-conference-2025-1/planning/UGxhbm5pbmdfMjU1MzU0MQ==" rel="noopener">DEVWorld</a> · Amsterdam — <a href="https://www.youtube.com/watch?v=8GJb6fC5ceA" rel="noopener">watch</a></p></div><span class="row-meta">Feb 2025</span></li>
+      </ol>
+
+      <h3 class="year">2024</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://www.wearedevelopers.com/sessions/webassembly-the-next-frontier-of-cloud-computing" rel="noopener">WeAreDevelopers World Congress</a> · Berlin — <a href="https://www.wearedevelopers.com/en/videos/972/webassembly-the-next-frontier-of-cloud-computing-1724180870" rel="noopener">watch</a></p></div><span class="row-meta">Jul 2024</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Server Components Are React’s Superweapon: Can PHP Strike Back?</span><p class="venue"><a href="https://www.devoxx.com/speaker/edoardo-dusi" rel="noopener">Voxxed Days Trieste</a> · Trieste — <a href="https://youtu.be/OgZgqcyTIRY" rel="noopener">watch</a></p></div><span class="row-meta">May 2024</span></li>
+        <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://2024.osday.dev/it/speakers" rel="noopener">Open Source Day</a> · Florence — <a href="https://youtu.be/qJWafRo0q5E" rel="noopener">watch</a></p></div><span class="row-meta">Mar 2024</span></li>
+      </ol>
+
+      <h3 class="year">2023</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><span class="talk">True Wizards: The Story of John von Neumann and Alan Turing</span><p class="venue">DevFest Pescara (keynote) &amp; DevFest Alps · Pescara, Turin — <a href="https://www.youtube.com/watch?v=fVoYI_GN5Ew" rel="noopener">watch</a></p></div><span class="row-meta">Nov–Dec 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">React vs. the Rest of the Web: Civil War</span><p class="venue"><a href="https://www.reactjsday.it/speaker/edoardo-dusi/" rel="noopener">reactjsday</a> · Verona — <a href="https://youtu.be/IUw5oe5fhE8" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://2023.containerday.it/schedule/#webassembly:-the-next-frontier-of-cloud-computing-2" rel="noopener">containerday</a> · Bologna — <a href="https://www.youtube.com/watch?v=tkd8CZnhz8E" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Clash of JS: The Same App Built With Different JavaScript Frameworks</span><p class="venue">Come To Code · Pignola — <a href="https://www.youtube.com/watch?v=LyeL1CMPQrM" rel="noopener">watch</a></p></div><span class="row-meta">Sep 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">The Perfect CI/CD React Native Pipeline With Fastlane</span><p class="venue"><a href="https://www.wearedevelopers.com/sessions/the-perfect-ci-cd-react-native-pipeline-with-fastlane" rel="noopener">WeAreDevelopers Live</a> · online — <a href="https://www.youtube.com/live/iV-bZubGWsE?t=255" rel="noopener">watch</a></p></div><span class="row-meta">Mar 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Testing Web Apps With Cypress in CI</span><p class="venue"><a href="https://www.webdayconf.it/e/sessione/3112/Testing-web-apps-with-Cypress-in-CI" rel="noopener">Web Day</a> · Milan</p></div><span class="row-meta">Mar 2023</span></li>
+      </ol>
+
+      <h3 class="year">2022</h3>
+      <ol class="stack">
+        <li class="row"><div class="row-main"><span class="talk">Testing Angular Apps With Cypress in CI</span><p class="venue"><a href="https://2022.angularday.it/schedule/#testing_cypress" rel="noopener">angularday</a> · Verona — <a href="https://www.youtube.com/watch?v=8MNCdRdMAoo" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2022</span></li>
+      </ol>
+
+      <p class="more">Also on stage at WeAreDevelopers World Congress 2025, Codemotion Rome, DeveloperWeek, and We Make Future — full history on <a href="https://sessionize.com/edodusi/" rel="noopener">Sessionize</a>.</p>
+    </section>
+
+    <section id="projects" class="section reveal">
+      <h2><span class="section-num">05</span>Side Projects</h2>
+      <ol class="stack">
+        <li class="row">
+          <div class="row-main">
+            <a href="https://play.google.com/store/apps/details?id=com.edodusi.coderoutine" rel="noopener">CodeRoutine</a>
+            <p>A mobile app for building a daily coding habit, on Google Play.</p>
+          </div>
+        </li>
+        <li class="row">
+          <div class="row-main">
+            <a href="https://github.com/edodusi/bamboo" rel="noopener">bamboo</a>
+            <p>A minimal Go CLI for BambooHR time tracking — clock in, clock out, check status from your terminal. Open source on GitHub.</p>
+          </div>
+        </li>
+        <li class="row">
+          <div class="row-main">
+            <a href="https://github.com/edodusi/gaming-library" rel="noopener">Gaming Library CLI</a>
+            <p>A CLI to manage and track your personal video game library. Open source on GitHub.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="elsewhere" class="section reveal">
+      <h2><span class="section-num">06</span>Elsewhere</h2>
+      <ul class="link-grid">
+        <li><a href="https://github.com/edodusi" rel="me noopener">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/edoardodusi/" rel="me noopener">LinkedIn</a></li>
+        <li><a href="https://hachyderm.io/@edodusi" rel="me noopener">Mastodon</a></li>
+        <li><a href="https://www.youtube.com/@edodusi" rel="me noopener">YouTube</a></li>
+        <li><a href="https://www.instagram.com/edodusi/" rel="me noopener">Instagram</a></li>
+        <li><a href="https://twitch.tv/edodusi" rel="me noopener">Twitch</a></li>
+        <li><a href="https://dev.to/edodusi" rel="me noopener">dev.to</a></li>
+        <li><a href="https://sessionize.com/edodusi/" rel="me noopener">Sessionize</a></li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="site-foot">
+    <p>© <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
+  </footer>
+
+  <script src="main.js?v1" defer></script>
 </body>
 </html>
