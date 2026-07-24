@@ -128,4 +128,50 @@
 
     pre.appendChild(btn);
   });
+
+  // --- Reading Progress & TOC -----------------------------------------------
+  var blogContent = document.querySelector('.blog-content');
+  if (blogContent) {
+    // 1. Generate TOC
+    var headings = blogContent.querySelectorAll('h2, h3');
+    if (headings.length > 0) {
+      var toc = document.createElement('aside');
+      toc.className = 'toc-container';
+      toc.innerHTML = '<h3>Table of Contents</h3><ul></ul>';
+      var ul = toc.querySelector('ul');
+      headings.forEach(function(h, i) {
+        if (!h.id) h.id = 'heading-' + i;
+        var li = document.createElement('li');
+        if (h.tagName === 'H3') li.style.paddingLeft = '1.5rem';
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent;
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      blogContent.insertBefore(toc, blogContent.firstChild);
+    }
+
+    // 2. Reading Progress Bar
+    var progressBar = document.getElementById('progress-bar');
+    if (progressBar) {
+      window.addEventListener('scroll', function() {
+        var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        var scrolled = (winScroll / height) * 100;
+        progressBar.style.width = scrolled + '%';
+      });
+    }
+
+    // 3. Language Badges
+    document.querySelectorAll('.blog-content pre').forEach(function(pre) {
+      var code = pre.querySelector('code');
+      if (code && code.className) {
+        var match = code.className.match(/language-(\w+)/);
+        if (match) {
+          pre.setAttribute('data-language', match[1]);
+        }
+      }
+    });
+  }
 })();

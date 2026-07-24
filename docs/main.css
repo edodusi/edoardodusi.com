@@ -2,6 +2,7 @@
    edoardodusi.com — minimal, elegant, fast.
    No external requests: system fonts, inline icons.
 --------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 :root {
   --bg: #faf9f7;
@@ -32,13 +33,24 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   font-size: 1.0625rem;
   line-height: 1.65;
   background: var(--bg);
   color: var(--fg);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50vh;
+  background: radial-gradient(ellipse at 15% 0%, var(--accent-soft) 0%, transparent 60%),
+              radial-gradient(ellipse at 85% 0%, rgba(15, 118, 110, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 ::selection { background: var(--accent); color: var(--bg); }
