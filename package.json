@@ -1,0 +1,31 @@
+{
+  "name": "edoardodusi.com",
+  "version": "1.0.0",
+  "description": "Source for [edoardodusi.com](https://edoardodusi.com) — the personal site of Edoardo Dusi: DevRel Team Manager at Storyblok, podcaster, conference speaker, and writer based in Bologna, Italy.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edodusi/edoardodusi.com.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/edodusi/edoardodusi.com/issues"
+  },
+  "homepage": "https://github.com/edodusi/edoardodusi.com#readme",
+  "devDependencies": {
+    "front-matter": "^4.0.2",
+    "highlight.js": "^11.11.1",
+    "marked": "^18.0.7",
+    "marked-highlight": "^2.2.4"
+  }
+}
