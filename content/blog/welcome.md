@@ -1,6 +1,7 @@
 ---
 title: "Welcome to my new website and blog!"
 date: "2026-07-24"
+tags: ["JavaScript", "HTML", "CSS", "Markdown"]
 excerpt: "I finally decided to build a proper home on the internet. Here's a look under the hood of my new custom static site and markdown blog."
 ---
 

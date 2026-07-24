@@ -55,6 +55,10 @@
       font-weight: 600; letter-spacing: 0.1em; color: var(--faint); padding: 0.3rem 0; pointer-events: none;
     }
     .blog-content pre code { padding-top: 2.2rem; }
+    
+    .article-tags { margin-top: 0.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .article-tags .tag { font-size: 0.85rem; color: var(--faint); text-transform: lowercase; }
+    .article-tags .tag::before { content: '#'; color: var(--accent); opacity: 0.6; margin-right: 2px; }
   </style>
 </head>
 <body>
@@ -93,6 +97,7 @@
       <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
       <h1>Welcome to my new website and blog!</h1>
       <p class="tagline">July 24, 2026</p>
+      <div class="article-tags"><span class="tag">JavaScript</span><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">Markdown</span></div>
     </section>
 
     <section class="section reveal blog-content" style="border-top: none; padding-top: 0;">

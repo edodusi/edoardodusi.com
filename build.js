@@ -71,9 +71,48 @@ async function build() {
       fs.mkdirSync(yearDir, { recursive: true });
     }
 
+    const rawTags = parsed.attributes.tags;
+    let tagArray = [];
+    if (rawTags) {
+      tagArray = Array.isArray(rawTags) ? rawTags : rawTags.split(',').map(t => t.trim());
+    }
+    
+    // For OG Image
+    let ogTags = tagArray.length > 0 ? tagArray : ['Markdown', 'Love'];
+    const totalWeight = ogTags.reduce((acc, _, i) => acc + (ogTags.length - i), 0);
+    let barSegments = '';
+    let labelSegments = '';
+    
+    const colors = {
+      javascript: '#f1e05a', js: '#f1e05a', typescript: '#3178c6', ts: '#3178c6',
+      html: '#e34c26', css: '#563d7c', python: '#3572A5', rust: '#dea584',
+      go: '#00ADD8', ruby: '#701516', shell: '#89e051', bash: '#89e051',
+      markdown: '#3178c6', love: '#e34c26', design: '#ff4785', react: '#61dafb'
+    };
+    const palette = ['#4fd1c5', '#f6ad55', '#fc8181', '#68d391', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b'];
+    
+    ogTags.forEach((tag, i) => {
+      const weight = ogTags.length - i;
+      const pct = Math.round((weight / totalWeight) * 100);
+      const t = tag.toLowerCase();
+      let color = colors[t];
+      if (!color) {
+        let hash = 0;
+        for (let j = 0; j < t.length; j++) hash = t.charCodeAt(j) + ((hash << 5) - hash);
+        color = palette[Math.abs(hash) % palette.length];
+      }
+      barSegments += `<div style="display: flex; background-color: ${color}; height: 100%; width: ${pct}%;"></div>`;
+      labelSegments += `
+        <div style="display: flex; align-items: center; margin-right: 32px;">
+          <div style="display: flex; width: 14px; height: 14px; border-radius: 50%; background-color: ${color}; margin-right: 12px;"></div>
+          ${tag} ${pct}%
+        </div>
+      `;
+    });
+
     const dateString = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const avatarBase64 = fs.readFileSync(path.join(__dirname, 'docs/avatar.jpg')).toString('base64');
-    const markup = html`
+    const markupString = `
       <div style="display: flex; flex-direction: column; width: 1200px; height: 630px; background-color: #ffffff; font-family: 'Inter'; padding: 24px;">
         <div style="display: flex; flex-direction: column; flex-grow: 1; border: 1px solid #2d3139; border-radius: 16px; background-color: #15161b; padding: 48px 56px;">
           
@@ -114,23 +153,17 @@ async function build() {
           </div>
 
           <div style="display: flex; height: 12px; width: 100%; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
-            <div style="display: flex; background-color: #3178c6; height: 100%; width: 60%;"></div>
-            <div style="display: flex; background-color: #e34c26; height: 100%; width: 40%;"></div>
+            ${barSegments}
           </div>
           
           <div style="display: flex; font-size: 26px; color: #8b949e;">
-            <div style="display: flex; align-items: center; margin-right: 32px;">
-              <div style="display: flex; width: 14px; height: 14px; border-radius: 50%; background-color: #3178c6; margin-right: 12px;"></div>
-              Markdown 60%
-            </div>
-            <div style="display: flex; align-items: center;">
-              <div style="display: flex; width: 14px; height: 14px; border-radius: 50%; background-color: #e34c26; margin-right: 12px;"></div>
-              Love 40%
-            </div>
+            ${labelSegments}
           </div>
         </div>
       </div>
     `;
+
+    const markup = html([markupString]);
 
     const svg = await satori(markup, {
       width: 1200,
@@ -151,13 +184,19 @@ async function build() {
     const relativeUrl = `${year}/${slug}.html`;
     const ogImageUrl = `https://edoardodusi.com/blog/${year}/${ogFileName}`;
 
+    let pageTagsHtml = '';
+    if (tagArray.length > 0) {
+      pageTagsHtml = '<div class="article-tags">' + tagArray.map(t => `<span class="tag">${t}</span>`).join('') + '</div>';
+    }
+
     let postHtml = layoutTemplate
       .replace(/{{title}}/g, title)
       .replace(/{{date}}/g, dateString)
       .replace(/{{content}}/g, htmlContent)
       .replace(/{{excerpt}}/g, excerpt)
       .replace(/{{url}}/g, `https://edoardodusi.com/blog/${relativeUrl}`)
-      .replace(/{{og_image}}/g, ogImageUrl);
+      .replace(/{{og_image}}/g, ogImageUrl)
+      .replace(/{{tags}}/g, pageTagsHtml);
 
     fs.writeFileSync(path.join(yearDir, `${slug}.html`), postHtml);
     posts.push({ title, date, excerpt, url: relativeUrl });
