@@ -33,7 +33,7 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="main.css?v1" />
+  <link rel="stylesheet" href="main.css?v2" />
 
   <script type="application/ld+json">
   {
@@ -62,7 +62,7 @@
   <header class="site-head">
     <nav class="site-nav" aria-label="Sections">
       <a class="brand" href="#top">edo</a>
-      <div class="nav-links">
+      <div id="nav-links" class="nav-links">
         <a href="#work">Work</a>
         <a href="#podcast">Podcast</a>
         <a href="#speaking">Speaking</a>
@@ -70,6 +70,13 @@
         <a href="#guests">Guest</a>
         <a href="#projects">Side</a>
       </div>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="bar bar-1" x1="4" y1="6" x2="20" y2="6"/>
+          <line class="bar bar-2" x1="4" y1="12" x2="20" y2="12"/>
+          <line class="bar bar-3" x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch color theme">
         <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
@@ -301,9 +308,12 @@
   </main>
 
   <footer class="site-foot">
-    <p>© <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
+    <div class="foot-row">
+      <p>&copy; <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
+      <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+    </div>
   </footer>
 
-  <script src="main.js?v1" defer></script>
+  <script src="main.js?v2" defer></script>
 </body>
 </html>

@@ -20,6 +20,49 @@
     }
   });
 
+  // --- Mobile nav toggle ----------------------------------------------------
+  var navToggle = document.getElementById('nav-toggle');
+  var navLinks = document.getElementById('nav-links');
+
+  if (navToggle && navLinks) {
+    navToggle.addEventListener('click', function () {
+      var open = navToggle.getAttribute('aria-expanded') === 'true';
+      navToggle.setAttribute('aria-expanded', String(!open));
+      navToggle.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
+      navLinks.classList.toggle('is-open', !open);
+    });
+
+    // Close menu when a nav link is tapped
+    navLinks.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.setAttribute('aria-label', 'Open menu');
+        navLinks.classList.remove('is-open');
+      });
+    });
+
+    // Close menu on outside click
+    document.addEventListener('click', function (e) {
+      if (navLinks.classList.contains('is-open') &&
+          !navLinks.contains(e.target) &&
+          !navToggle.contains(e.target)) {
+        navToggle.setAttribute('aria-expanded', 'false');
+        navToggle.setAttribute('aria-label', 'Open menu');
+        navLinks.classList.remove('is-open');
+      }
+    });
+  }
+
+  // --- Contact email (obfuscated) -------------------------------------------
+  var contact = document.getElementById('contact-link');
+  if (contact) {
+    var u = contact.dataset.u;
+    var d = contact.dataset.d;
+    var addr = u + '@' + d;
+    contact.href = 'ma' + 'il' + 'to:' + addr;
+    contact.textContent = addr;
+  }
+
   // --- Scroll reveal --------------------------------------------------------
   if ('IntersectionObserver' in window) {
     root.classList.add('reveal-ready');
