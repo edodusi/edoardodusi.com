@@ -33,7 +33,11 @@
     .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
     .blog-content a:hover { text-decoration-color: var(--accent); }
     .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; }
+    .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
+    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus { opacity: 1; }
+    .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
     .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.9em; line-height: 1.5; background: transparent; }
     .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
     .blog-content li { margin-bottom: 0.5rem; }
