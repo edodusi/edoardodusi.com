@@ -419,3 +419,45 @@ main {
   .row { flex-direction: column; gap: 0.15rem; }
   .link-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* --- View Transitions (MPA) Customization ---------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Premium Depth/Scale Transition */
+  ::view-transition-old(root) {
+    animation: fade-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) both,
+               scale-down 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: fade-in 0.35s cubic-bezier(0, 0, 0.2, 1) both,
+               scale-up 0.35s cubic-bezier(0, 0, 0.2, 1) both;
+  }
+
+  /* Exclude the navigation header from the animation so it persists perfectly */
+  .site-head {
+    view-transition-name: site-header;
+  }
+  
+  ::view-transition-old(site-header),
+  ::view-transition-new(site-header) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes scale-down {
+  from { transform: scale(1); }
+  to { transform: scale(0.98); }
+}
+@keyframes scale-up {
+  from { transform: scale(1.02); }
+  to { transform: scale(1); }
+}
