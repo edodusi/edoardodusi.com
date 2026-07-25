@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Edoardo Dusi's Blog</title>
+  <link>https://edoardodusi.com/blog</link>
+  <description>Articles, thoughts, and updates from Edoardo Dusi</description>
+  <language>en-us</language>
+  <lastBuildDate>Sat, 25 Jul 2026 16:02:41 GMT</lastBuildDate>
+  <atom:link href="https://edoardodusi.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+  
+    <item>
+      <title><![CDATA[Welcome to my new website and blog!]]></title>
+      <link>https://edoardodusi.com/blog/2026/welcome.html</link>
+      <description><![CDATA[I finally decided to build a proper home on the internet. Here's a look under the hood of my new custom static site and markdown blog.]]></description>
+      <pubDate>Fri, 24 Jul 2026 00:00:00 GMT</pubDate>
+      <guid>https://edoardodusi.com/blog/2026/welcome.html</guid>
+    </item>
+  
+</channel>
+</rss>

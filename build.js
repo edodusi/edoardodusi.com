@@ -184,6 +184,9 @@ async function build() {
     const relativeUrl = `${year}/${slug}.html`;
     const ogImageUrl = `https://edoardodusi.com/blog/${year}/${ogFileName}`;
 
+    const wordCount = parsed.body.trim().split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
     let pageTagsHtml = '';
     if (tagArray.length > 0) {
       pageTagsHtml = '<div class="article-tags">' + tagArray.map(t => `<span class="tag">${t}</span>`).join('') + '</div>';
@@ -192,6 +195,8 @@ async function build() {
     let postHtml = layoutTemplate
       .replace(/{{title}}/g, title)
       .replace(/{{date}}/g, dateString)
+      .replace(/{{iso_date}}/g, date.toISOString())
+      .replace(/{{reading_time}}/g, `${readingTime} min read`)
       .replace(/{{content}}/g, htmlContent)
       .replace(/{{excerpt}}/g, excerpt)
       .replace(/{{url}}/g, `https://edoardodusi.com/blog/${relativeUrl}`)
@@ -199,7 +204,7 @@ async function build() {
       .replace(/{{tags}}/g, pageTagsHtml);
 
     fs.writeFileSync(path.join(yearDir, `${slug}.html`), postHtml);
-    posts.push({ title, date, excerpt, url: relativeUrl });
+    posts.push({ title, date, excerpt, url: relativeUrl, readingTime });
   }
 
   posts.sort((a, b) => b.date - a.date);
@@ -214,7 +219,7 @@ async function build() {
             <a href="${post.url}">${post.title}</a>
             <p>${post.excerpt}</p>
           </div>
-          <span class="row-meta">${post.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</span>
+          <span class="row-meta">${post.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} &middot; ${post.readingTime} min</span>
         </li>
       `;
     }
@@ -226,7 +231,33 @@ async function build() {
   const finalIndexHtml = listTemplate.replace(/{{posts}}/g, postListHtml);
   fs.writeFileSync(path.join(outputDir, 'index.html'), finalIndexHtml);
 
-  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts and custom OG Images in docs/blog/`);
+  // Generate RSS Feed
+  const rssItems = posts.map(post => `
+    <item>
+      <title><![CDATA[${post.title}]]></title>
+      <link>https://edoardodusi.com/blog/${post.url}</link>
+      <description><![CDATA[${post.excerpt}]]></description>
+      <pubDate>${post.date.toUTCString()}</pubDate>
+      <guid>https://edoardodusi.com/blog/${post.url}</guid>
+    </item>
+  `).join('');
+
+  const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Edoardo Dusi's Blog</title>
+  <link>https://edoardodusi.com/blog</link>
+  <description>Articles, thoughts, and updates from Edoardo Dusi</description>
+  <language>en-us</language>
+  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+  <atom:link href="https://edoardodusi.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+  ${rssItems}
+</channel>
+</rss>`;
+
+  fs.writeFileSync(path.join(outputDir, 'rss.xml'), rssFeed);
+
+  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, and RSS feed in docs/blog/`);
 }
 
 build().catch(console.error);

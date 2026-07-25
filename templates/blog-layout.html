@@ -17,7 +17,23 @@
   <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f766e'/%3E%3Ctext x='50' y='68' font-size='52' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3Ee%3C/text%3E%3C/svg%3E" />
+  <link rel="alternate" type="application/rss+xml" title="Edoardo Dusi's Blog RSS Feed" href="https://edoardodusi.com/blog/rss.xml" />
 
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{title}}",
+    "image": "{{og_image}}",
+    "datePublished": "{{iso_date}}",
+    "description": "{{excerpt}}",
+    "author": {
+      "@type": "Person",
+      "name": "Edoardo Dusi",
+      "url": "https://edoardodusi.com"
+    }
+  }
+  </script>
   <script>
     (function () {
       var stored = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme');
@@ -93,16 +109,18 @@
   </header>
 
   <main id="top">
-    <section class="hero reveal">
-      <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
-      <h1>{{title}}</h1>
-      <p class="tagline">{{date}}</p>
-      {{tags}}
-    </section>
+    <article class="h-entry">
+      <header class="hero reveal">
+        <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
+        <h1 class="p-name">{{title}}</h1>
+        <p class="tagline"><time class="dt-published" datetime="{{iso_date}}">{{date}}</time> &middot; {{reading_time}}</p>
+        {{tags}}
+      </header>
 
-    <section class="section reveal blog-content" style="border-top: none; padding-top: 0;">
-      {{content}}
-    </section>
+      <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
+        {{content}}
+      </div>
+    </article>
   </main>
 
   <footer class="site-foot">
