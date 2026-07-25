@@ -257,7 +257,32 @@ async function build() {
 
   fs.writeFileSync(path.join(outputDir, 'rss.xml'), rssFeed);
 
-  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, and RSS feed in docs/blog/`);
+  // Generate Sitemap
+  const staticUrls = [
+    { loc: 'https://edoardodusi.com/', priority: '1.0', changefreq: 'monthly' },
+    { loc: 'https://edoardodusi.com/blog/', priority: '0.9', changefreq: 'weekly' },
+  ];
+
+  const postUrls = posts.map(post => ({
+    loc: `https://edoardodusi.com/blog/${post.url}`,
+    lastmod: post.date.toISOString().split('T')[0],
+    priority: '0.8',
+    changefreq: 'never',
+  }));
+
+  const allUrls = [...staticUrls, ...postUrls];
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls.map(u => `  <url>
+    <loc>${u.loc}</loc>${u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : ''}
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+  fs.writeFileSync(path.join(path.dirname(outputDir), 'sitemap.xml'), sitemapXml);
+
+  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, RSS feed, and sitemap in docs/`);
 }
 
 build().catch(console.error);
