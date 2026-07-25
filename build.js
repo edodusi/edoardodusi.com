@@ -204,7 +204,7 @@ async function build() {
       .replace(/{{tags}}/g, pageTagsHtml);
 
     fs.writeFileSync(path.join(yearDir, `${slug}.html`), postHtml);
-    posts.push({ title, date, excerpt, url: relativeUrl, readingTime });
+    posts.push({ title, date, excerpt, url: relativeUrl, readingTime, body: parsed.body });
   }
 
   posts.sort((a, b) => b.date - a.date);
@@ -282,7 +282,38 @@ ${allUrls.map(u => `  <url>
 
   fs.writeFileSync(path.join(path.dirname(outputDir), 'sitemap.xml'), sitemapXml);
 
-  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, RSS feed, and sitemap in docs/`);
+  // Generate llms.txt (index for AI)
+  const docsDir = path.dirname(outputDir);
+  const llmsTxt = `# Edoardo Dusi
+
+> Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
+
+## Blog Posts
+${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.excerpt}`).join('\n')}
+
+## Links
+- [Blog](https://edoardodusi.com/blog/)
+- [RSS Feed](https://edoardodusi.com/blog/rss.xml)
+- [Sitemap](https://edoardodusi.com/sitemap.xml)
+`;
+  fs.writeFileSync(path.join(docsDir, 'llms.txt'), llmsTxt);
+
+  // Generate llms-full.txt (full content for AI)
+  const llmsFullTxt = `# Edoardo Dusi — Full Blog Content
+
+> Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
+> Website: https://edoardodusi.com
+
+---
+
+${posts.map(p => {
+    const dateStr = p.date.toISOString().split('T')[0];
+    return `# ${p.title}\nURL: https://edoardodusi.com/blog/${p.url}\nDate: ${dateStr}\nReading time: ${p.readingTime} min\n\n${p.body.trim()}`;
+  }).join('\n\n---\n\n')}
+`;
+  fs.writeFileSync(path.join(docsDir, 'llms-full.txt'), llmsFullTxt);
+
+  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, RSS feed, sitemap, and llms.txt in docs/`);
 }
 
 build().catch(console.error);
