@@ -113,5 +113,120 @@
   </footer>
 
   <script src="/main.js?v2" defer></script>
+  <script>
+    (function () {
+      const title = document.querySelector('.hero h1');
+      if (!title) return;
+
+      // Exact accent colors per theme + orange target
+      const DARK_TEAL  = { h: 177, s: 59, l: 57 }; // #4fd1c5
+      const LIGHT_TEAL = { h: 174, s: 78, l: 27 }; // #0f766e
+      const ORANGE     = { h: 22,  s: 90, l: 55 }; // ~#f26522
+
+      let angle       = 135;
+      let targetAngle = 135;
+      let blend       = 0;   // 0 = solid teal, 1 = full orange gradient
+      let targetBlend = 0;
+      let rafId       = null;
+      let isHovering  = false;
+
+      const isDark = () => document.documentElement.dataset.theme === 'dark';
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function revertToCSS() {
+        title.style.backgroundImage     = '';
+        title.style.webkitBackgroundClip = '';
+        title.style.backgroundClip      = '';
+        title.style.webkitTextFillColor  = '';
+      }
+
+      function apply() {
+        const TEAL = isDark() ? DARK_TEAL : LIGHT_TEAL;
+        const h2 = lerp(TEAL.h, ORANGE.h, blend);
+        const s2 = lerp(TEAL.s, ORANGE.s, blend);
+        const l2 = lerp(TEAL.l, ORANGE.l, blend);
+        const grad = `linear-gradient(${angle.toFixed(1)}deg,` +
+          `hsl(${TEAL.h},${TEAL.s}%,${TEAL.l}%) 0%,` +
+          `hsl(${h2.toFixed(0)},${s2.toFixed(0)}%,${l2.toFixed(0)}%) 100%)`;
+        title.style.backgroundImage      = grad;
+        title.style.webkitBackgroundClip = 'text';
+        title.style.backgroundClip       = 'text';
+        title.style.webkitTextFillColor  = 'transparent';
+      }
+
+      function tick() {
+        angle = lerp(angle, targetAngle, 0.07);
+        blend = lerp(blend, targetBlend, 0.05);
+
+        apply();
+
+        const done = Math.abs(angle - targetAngle) < 0.05 &&
+                     Math.abs(blend - targetBlend) < 0.002;
+
+        if (!done || isHovering) {
+          rafId = requestAnimationFrame(tick);
+        } else {
+          angle = targetAngle;
+          blend = targetBlend;
+          rafId = null;
+          // In light mode, once fully settled at blend=0, hand back to CSS
+          if (!isDark() && targetBlend === 0) {
+            revertToCSS();
+          } else {
+            apply();
+          }
+        }
+      }
+
+      function startTick() {
+        if (!rafId) rafId = requestAnimationFrame(tick);
+      }
+
+      // Dark mode: take over immediately (gradient always visible)
+      // Light mode: leave CSS in charge until hover
+      if (isDark()) {
+        blend = 1; targetBlend = 1;
+        apply();
+      }
+
+      // Watch for theme toggle
+      const observer = new MutationObserver(() => {
+        if (isDark()) {
+          targetBlend = 1;
+          startTick();
+        } else {
+          targetBlend = isHovering ? 1 : 0;
+          if (!isHovering) {
+            // Animate out then revert
+            startTick();
+          }
+        }
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      title.addEventListener('mousemove', (e) => {
+        if (!isHovering) {
+          // First frame of hover: sync angle & blend start for smooth entry
+          isHovering = true;
+          blend = 0;
+        }
+        targetBlend = 1;
+        const rect = title.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width  - 0.5;
+        const y = (e.clientY - rect.top)  / rect.height - 0.5;
+        targetAngle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+        angle = targetAngle; // snap angle, only blend smoothly
+        startTick();
+      });
+
+      title.addEventListener('mouseleave', () => {
+        isHovering  = false;
+        targetAngle = 135;
+        targetBlend = isDark() ? 1 : 0;
+        startTick();
+      });
+    })();
+  </script>
 </body>
 </html>
