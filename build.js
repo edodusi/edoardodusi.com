@@ -32,6 +32,23 @@ fs.copyFileSync(cssSource, cssDest);
 const layoutTemplate = fs.readFileSync(path.join(templatesDir, 'blog-layout.html'), 'utf-8');
 const listTemplate = fs.readFileSync(path.join(templatesDir, 'blog-list.html'), 'utf-8');
 
+// Escape a value for use in HTML text nodes and attribute values.
+// Without this, a double quote in a post title breaks attributes such as
+// <meta property="og:title" content="{{title}}" />.
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Escape a value for embedding inside a JSON string literal (JSON-LD).
+function escapeJsonString(value) {
+  return JSON.stringify(String(value)).slice(1, -1);
+}
+
 async function downloadFont(url, dest) {
   if (fs.existsSync(dest)) return fs.readFileSync(dest);
   console.log('Downloading Inter font...');
@@ -182,24 +199,34 @@ async function build() {
 
     const htmlContent = marked.parse(parsed.body);
     const relativeUrl = `${year}/${slug}.html`;
-    const ogImageUrl = `https://edoardodusi.com/blog/${year}/${ogFileName}`;
+    const ogImageUrl = `{{https://edoardodusi.com/blog/${year}}}/${ogFileName}`;
 
     const wordCount = parsed.body.trim().split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
     let pageTagsHtml = '';
     if (tagArray.length > 0) {
-      pageTagsHtml = '<div class="article-tags">' + tagArray.map(t => `<span class="tag">${t}</span>`).join('') + '</div>';
+      pageTagsHtml = '<div class="article-tags">' + tagArray.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('') + '</div>';
     }
 
-    let postHtml = layoutTemplate
-      .replace(/{{title}}/g, title)
+    // Title and excerpt appear both in HTML contexts (text nodes, attribute
+    // values) and inside the JSON-LD script block. Escape the JSON-LD block
+    // first with JSON string escaping, then everything else as HTML.
+    const safeTemplate = layoutTemplate.replace(
+      /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
+      (block) => block
+        .replace(/{{title}}/g, escapeJsonString(title))
+        .replace(/{{excerpt}}/g, escapeJsonString(excerpt))
+    );
+
+    let postHtml = safeTemplate
+      .replace(/{{title}}/g, escapeHtml(title))
       .replace(/{{date}}/g, dateString)
       .replace(/{{iso_date}}/g, date.toISOString())
       .replace(/{{reading_time}}/g, `${readingTime} min read`)
       .replace(/{{content}}/g, htmlContent)
-      .replace(/{{excerpt}}/g, excerpt)
-      .replace(/{{url}}/g, `https://edoardodusi.com/blog/${relativeUrl}`)
+      .replace(/{{excerpt}}/g, escapeHtml(excerpt))
+      .replace(/{{url}}/g, `{{https://edoardodusi.com/blog/${relativeUrl}}}`)
       .replace(/{{og_image}}/g, ogImageUrl)
       .replace(/{{tags}}/g, pageTagsHtml);
 
@@ -216,8 +243,8 @@ async function build() {
       postListHtml += `
         <li class="row">
           <div class="row-main">
-            <a href="${post.url}">${post.title}</a>
-            <p>${post.excerpt}</p>
+            <a href="${post.url}">${escapeHtml(post.title)}</a>
+            <p>${escapeHtml(post.excerpt)}</p>
           </div>
           <span class="row-meta">${post.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} &middot; ${post.readingTime} min</span>
         </li>
@@ -235,10 +262,10 @@ async function build() {
   const rssItems = posts.map(post => `
     <item>
       <title><![CDATA[${post.title}]]></title>
-      <link>https://edoardodusi.com/blog/${post.url}</link>
+      <link>{{https://edoardodusi.com/blog/${post.url}}}</link>
       <description><![CDATA[${post.excerpt}]]></description>
       <pubDate>${post.date.toUTCString()}</pubDate>
-      <guid>https://edoardodusi.com/blog/${post.url}</guid>
+      <guid>{{https://edoardodusi.com/blog/${post.url}}}</guid>
     </item>
   `).join('');
 
@@ -264,7 +291,7 @@ async function build() {
   ];
 
   const postUrls = posts.map(post => ({
-    loc: `https://edoardodusi.com/blog/${post.url}`,
+    loc: `{{https://edoardodusi.com/blog/${post.url}}}`,
     lastmod: post.date.toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'never',
@@ -289,7 +316,7 @@ ${allUrls.map(u => `  <url>
 > Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
 
 ## Blog Posts
-${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.excerpt}`).join('\n')}
+${posts.map(p => `- [${p.title}]({{https://edoardodusi.com/blog/${p.url}}}): ${p.excerpt}`).join('\n')}
 
 ## Links
 - [Blog](https://edoardodusi.com/blog/)
@@ -308,7 +335,7 @@ ${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.exc
 
 ${posts.map(p => {
     const dateStr = p.date.toISOString().split('T')[0];
-    return `# ${p.title}\nURL: https://edoardodusi.com/blog/${p.url}\nDate: ${dateStr}\nReading time: ${p.readingTime} min\n\n${p.body.trim()}`;
+    return `# ${p.title}\nURL: {{https://edoardodusi.com/blog/${p.url}}}\nDate: ${dateStr}\nReading time: ${p.readingTime} min\n\n${p.body.trim()}`;
   }).join('\n\n---\n\n')}
 `;
   fs.writeFileSync(path.join(docsDir, 'llms-full.txt'), llmsFullTxt);
