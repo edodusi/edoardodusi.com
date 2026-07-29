@@ -5,8 +5,160 @@
 
 ---
 
+# "Error while dexing": how an Android build failure led me to a dying SSD
+URL: {{https://edoardodusi.com/blog/2026/error-while-dexing.html}}
+Date: 2026-07-29
+Reading time: 8 min
+
+A dying disk doesn't announce itself like Roy Batty, with tears in rain. It sneaks in wearing a mask: the face of the first thing that happens to touch a bad sector.
+
+Mine looked like a Gradle bug. Claude Code saw through the disguise almost immediately. I didn't believe it at first, so I made it walk me through the evidence.
+
+## From a dexing error to an I/O error
+
+The release build of CodeRoutine failed every time on the same dependency:
+
+```bash
+Execution failed for DexingNoClasspathTransform: .../tink-android-1.8.0.jar
+  > Error while dexing.
+```
+
+If you've worked on Android, that points you toward software: a dependency conflict, a D8/R8 mismatch, a stale cache or some incompatibility between the library and the toolchain.
+
+We checked the obvious explanations first. A corrupted Gradle cache was plausible, but rebuilding it did not solve the failure. Memory pressure from orphaned Gradle daemons was plausible too, and wrong too.
+
+Then we looked one layer lower. A debug build had produced a less friendly but much more useful message:
+
+```bash
+AsmClassesTransform … > Input/output error
+```
+
+And underneath Gradle's summary, `--stacktrace` exposed the exception that mattered:
+
+```bash
+java.io.IOException
+```
+
+The toolchain wasn't rejecting the jar, it couldn't read it!
+
+A single command confirmed that Gradle was not involved:
+
+```bash
+cat ~/.gradle/caches/.../tink-android-1.8.0.jar > /dev/null
+```
+
+It returned an I/O error. After a couple of “Discombobulating…”, Claude Code was blunt: this was not a corrupted jar, this was a clear indicator of a failing drive.
+
+That conclusion surprised me, so I asked for details and evidence. The kernel log provided both:
+
+```bash
+nvme1n1: I/O Cmd(0x2) @ LBA 311368392, 256 blocks, I/O Error (sct 0x2 / sc 0x81)
+critical medium error, dev nvme1n1, sector 311368392 op 0x0:(READ)
+BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
+```
+
+`sct 0x2 / sc 0x81` is an unrecovered read error: the drive itself could not return the data.
+
+We then scanned all 1,285 artifacts in the Gradle cache for readability in one pass. Three were unreadable. I deleted them, Gradle downloaded clean copies and the build went green.
+
+The Android problem was solved, but the problem with my computer had just started.
+
+## SMART said PASSED
+
+The drive was a Fanxiang S770 2TB with 943 power-on hours and 4.8 TB written. Its headline looked reassuring:
+
+```bash
+SMART overall-health self-assessment test result: PASSED
+```
+
+But that was a lie. The useful information was a few lines below:
+
+| Metric | Value | Meaning |
+| --- | --- | --- |
+| Media and Data Integrity Errors | **50** | Unrecoverable data-loss events; this should be zero |
+| Available Spare | **89%** | 11% of the reserve had already been consumed |
+| Percentage Used | **0%** | Essentially no write wear |
+| Error Information Log Entries | **27,466** | Repeated attempts against failing reads |
+
+NVMe's overall-health result only fails when a Critical Warning bit is set, and mine was still `0x00`. The spare-capacity warning would not fire until Available Spare fell below its threshold, 25% on this drive.
+
+So the headline said `PASSED` while the counters described a nearly new SSD with 50 unrecoverable errors and 11% of its spare pool already gone. Zero wear made ordinary ageing a poor explanation. This looked like an early-life manufacturing defect.
+
+## Turning the failure into a rescue
+
+At that point the priority changed. I no longer cared about **fixing** the hardware, I wanted a backup of everything that could not be regenerated.
+
+Reading flash does not consume NAND endurance, writes do. But here I discovered that failed reads are different. The controller retries them aggressively and may relocate a marginal block, **consuming spare capacity** in the process. On this drive the expensive operation was not reading data once, it was repeatedly reading the same damaged regions.
+
+That shaped the recovery: no separate scan followed by a backup. The *backup itself* would be the scan.
+
+We built a one-pass process around `tar`:
+
+```bash
+tar --create --ignore-failed-read --numeric-owner --acls --xattrs \
+    --directory "$HOME" -- "$folder" 2>"$log" | \
+    zstd -1 -T0 -o "$dest/$folder.tar.zst"
+```
+
+`--ignore-failed-read` logs unreadable files and continues. The stderr log becomes the casualty list while the readable data goes directly to a healthy USB disk.
+
+Verification happens against that new disk, without touching the NVMe again:
+
+```bash
+zstd -t archive.tar.zst && \
+tar -tf archive.tar.zst --use-compress-program='zstd -d'
+```
+
+The recovery also forced me to *define* what was actually irreplaceable. My repositories had GitHub remotes and nothing unpushed. Build caches, Steam libraries, models and downloads could all be recreated. What mattered was much smaller: personal notes, dotfiles, keys, `.env` files and a couple of `google-services.json` files.
+
+That is why this backup was an allow-list rather than an exclude-list. Instead of trying to describe all the disposable bulk on the disk, I named the small set of things that existed nowhere else.
+
+When the process reached private SSH keys, cloud credentials and a GitHub token, Claude Code's permission guardrail stopped the action and handed the decision back to me. That was *absolutely right*! Disaster recovery is not a reason for an agent to move credentials onto an external device without explicit approval.
+
+## What had happened to the SSD
+
+With the important data safe, we could investigate the drive more aggressively.
+
+The decisive clue was not another counter but a timestamp. One damaged Firefox cache entry had been written on 2025-09-30, ten months before it became unreadable. The write had apparently succeeded, so the data degraded in place.
+
+SSD bad-block handling is good at catching cells that fail during a write. It is much less helpful when cells accept data and lose their charge later. That explained why Gradle had downloaded valid jars that became unreadable weeks afterwards.
+
+Successive Btrfs scrubs showed another important pattern:
+
+| Scrub | Read errors | Corrected | Uncorrectable | Files named |
+| --- | --- | --- | --- | --- |
+| 1 | 800 | 771 | 29 | 23 |
+| 2 | 448 | 423 | 25 | 4 |
+| 3 | 96 | 86 | 10 | 1 |
+
+Each run named different files. Some files that failed once could be read on the next attempt. So it was clear that these were not simply hard-dead sectors that failed consistently, but marginal cells *failing probabilistically*.
+
+If that sounds bad, it’s actually worse. A permanently dead sector is at least honest, a scrub finds it every time. A marginal cell can pass today's scan and fail next week, turning repeated scrubs into whack-a-mole.
+
+Luckily, every damaged file we found belonged to Steam or Proton, a browser cache or an Android emulator image. Nothing irreplaceable was lost.
+
+Across four scans, the hardware counters remained stable: Media Errors stayed at 50, Available Spare at 89% and Btrfs `corruption_errs` at zero. The damaged sectors were concentrated in two clusters inside the first 192 GB of the 2 TB device. The defect looked localised rather than actively spreading, but the drive had already destroyed data twice. It was no longer trustworthy as a system disk.
+
+## Where this left the drive
+
+I claimed the warranty. In the EU, the two-year legal guarantee of conformity is provided by the seller and is independent of the manufacturer's warranty. The drive was about twelve months old, and one conversation with the retailer produced an approved refund.
+
+The diagnostic evidence made the case straightforward: normal temperatures, 0% wear, 50 media errors and defects concentrated in one physical region. This was not a drive worn out by heavy use.
+
+Whether I will immediately replace it is a separate question. A comparable 2 TB SSD currently costs much more than I paid, while this one fails loudly: reads return `EIO` rather than silently producing corrupted bytes, and Btrfs reported no checksum corruption across four scans. That might make it tolerable as scratch space for Steam libraries or build caches, data that is never the only copy, but never again as the disk holding my home directory.
+
+The lesson worth keeping has nothing to do with SMART counters or NVMe error codes. It's that, left alone, I might never have suspected the disk at all: I would still be debugging Gradle, because that is what the symptom told me to do. It took Claude Code to see how much distance a failure can put between itself and its first symptom.
+
+An Android build said it could not dex a jar. Gradle made that look like a software problem. The stacktrace turned it into an I/O problem. The kernel turned it into an NVMe problem. It was Claude Code that followed that chain down, tested every layer and recovered the data once we reached the bottom. My job was mostly asking for evidence and approving the next step.
+
+A failing disk wears the mask of whatever touches the bad sector first. This one happened to look like Gradle.
+
+If I had kept using that NVMe as my primary disk, my data would have been lost in time, like tears in rain.
+
+---
+
 # Welcome to my new website and blog!
-URL: https://edoardodusi.com/blog/2026/welcome.html
+URL: {{https://edoardodusi.com/blog/2026/welcome.html}}
 Date: 2026-07-24
 Reading time: 2 min
 

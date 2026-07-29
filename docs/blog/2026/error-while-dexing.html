@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>&quot;Error while dexing&quot;: how an Android build failure led me to a dying SSD — Edoardo Dusi</title>
+  <meta name="description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
+  <link rel="canonical" href="{{https://edoardodusi.com/blog/2026/error-while-dexing.html}}" />
+  <meta name="view-transition" content="same-origin" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="&quot;Error while dexing&quot;: how an Android build failure led me to a dying SSD" />
+  <meta property="og:description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
+  <meta property="og:image" content="{{https://edoardodusi.com/blog/2026}}/error-while-dexing-og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f766e'/%3E%3Ctext x='50' y='68' font-size='52' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3Ee%3C/text%3E%3C/svg%3E" />
+  <link rel="alternate" type="application/rss+xml" title="Edoardo Dusi's Blog RSS Feed" href="https://edoardodusi.com/blog/rss.xml" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "\"Error while dexing\": how an Android build failure led me to a dying SSD",
+    "image": "{{https://edoardodusi.com/blog/2026}}/error-while-dexing-og.png",
+    "datePublished": "2026-07-29T00:00:00.000Z",
+    "description": "An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery.",
+    "author": {
+      "@type": "Person",
+      "name": "Edoardo Dusi",
+      "url": "https://edoardodusi.com"
+    }
+  }
+  </script>
+  <script>
+    (function () {
+      var stored = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme');
+      var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="stylesheet" href="/main.css?v2" />
+  <link rel="stylesheet" href="/syntax.css" />
+  
+  <style>
+    /* Minimal Markdown styling */
+    .blog-content h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
+    .blog-content h3 { font-size: 1.25rem; margin: 2rem 0 1rem; }
+    .blog-content p { margin-bottom: 1.5rem; }
+    .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+    .blog-content a:hover { text-decoration-color: var(--accent); }
+    .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
+    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus { opacity: 1; }
+    .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
+    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.9em; line-height: 1.5; background: transparent; }
+    .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    .blog-content li { margin-bottom: 0.5rem; }
+    .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
+    .blog-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem 0; }
+    #progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 1000; }
+    #progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.1s; }
+    
+    .blog-content pre::before {
+      content: attr(data-language);
+      position: absolute; top: 0; left: 1.25rem; font-size: 0.7rem; text-transform: uppercase;
+      font-weight: 600; letter-spacing: 0.1em; color: var(--faint); padding: 0.3rem 0; pointer-events: none;
+    }
+    .blog-content pre code { padding-top: 2.2rem; }
+    
+    .article-tags { margin-top: 0.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .article-tags .tag { font-size: 0.85rem; color: var(--faint); text-transform: lowercase; }
+    .article-tags .tag::before { content: '#'; color: var(--accent); opacity: 0.6; margin-right: 2px; }
+  </style>
+</head>
+<body>
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <header class="site-head">
+    <nav class="site-nav" aria-label="Sections">
+      <a class="brand" href="/">edo</a>
+      <div id="nav-links" class="nav-links">
+        <a href="/#work">Work</a>
+        <a href="/#podcast">Podcast</a>
+        <a href="/#speaking">Speaking</a>
+        <a href="/#writing">Writing</a>
+        <a href="/#guests">Guest</a>
+        <a href="/#projects">Side</a>
+      </div>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="bar bar-1" x1="4" y1="6" x2="20" y2="6"/>
+          <line class="bar bar-2" x1="4" y1="12" x2="20" y2="12"/>
+          <line class="bar bar-3" x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch color theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <article class="h-entry">
+      <header class="hero reveal">
+        <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
+        <h1 class="p-name">&quot;Error while dexing&quot;: how an Android build failure led me to a dying SSD</h1>
+        <p class="tagline"><time class="dt-published" datetime="2026-07-29T00:00:00.000Z">July 29, 2026</time> &middot; 8 min read</p>
+        <div class="article-tags"><span class="tag">Storage</span><span class="tag">AI</span><span class="tag">Linux</span><span class="tag">Hardware</span></div>
+      </header>
+
+      <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
+        <p>A dying disk doesn&#39;t announce itself like Roy Batty, with tears in rain. It sneaks in wearing a mask: the face of the first thing that happens to touch a bad sector.</p>
+<p>Mine looked like a Gradle bug. Claude Code saw through the disguise almost immediately. I didn&#39;t believe it at first, so I made it walk me through the evidence.</p>
+<h2>From a dexing error to an I/O error</h2>
+<p>The release build of CodeRoutine failed every time on the same dependency:</p>
+<pre><code class="hljs language-bash">Execution failed <span class="hljs-keyword">for</span> DexingNoClasspathTransform: .../tink-android-1.8.0.jar
+  &gt; Error <span class="hljs-keyword">while</span> dexing.
+</code></pre><p>If you&#39;ve worked on Android, that points you toward software: a dependency conflict, a D8/R8 mismatch, a stale cache or some incompatibility between the library and the toolchain.</p>
+<p>We checked the obvious explanations first. A corrupted Gradle cache was plausible, but rebuilding it did not solve the failure. Memory pressure from orphaned Gradle daemons was plausible too, and wrong too.</p>
+<p>Then we looked one layer lower. A debug build had produced a less friendly but much more useful message:</p>
+<pre><code class="hljs language-bash">AsmClassesTransform … &gt; Input/output error
+</code></pre><p>And underneath Gradle&#39;s summary, <code>--stacktrace</code> exposed the exception that mattered:</p>
+<pre><code class="hljs language-bash">java.io.IOException
+</code></pre><p>The toolchain wasn&#39;t rejecting the jar, it couldn&#39;t read it!</p>
+<p>A single command confirmed that Gradle was not involved:</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cat</span> ~/.gradle/caches/.../tink-android-1.8.0.jar &gt; /dev/null
+</code></pre><p>It returned an I/O error. After a couple of “Discombobulating…”, Claude Code was blunt: this was not a corrupted jar, this was a clear indicator of a failing drive.</p>
+<p>That conclusion surprised me, so I asked for details and evidence. The kernel log provided both:</p>
+<pre><code class="hljs language-bash">nvme1n1: I/O Cmd(0x2) @ LBA 311368392, 256 blocks, I/O Error (sct 0x2 / sc 0x81)
+critical medium error, dev nvme1n1, sector 311368392 op 0x0:(READ)
+BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
+</code></pre><p><code>sct 0x2 / sc 0x81</code> is an unrecovered read error: the drive itself could not return the data.</p>
+<p>We then scanned all 1,285 artifacts in the Gradle cache for readability in one pass. Three were unreadable. I deleted them, Gradle downloaded clean copies and the build went green.</p>
+<p>The Android problem was solved, but the problem with my computer had just started.</p>
+<h2>SMART said PASSED</h2>
+<p>The drive was a Fanxiang S770 2TB with 943 power-on hours and 4.8 TB written. Its headline looked reassuring:</p>
+<pre><code class="hljs language-bash">SMART overall-health self-assessment <span class="hljs-built_in">test</span> result: PASSED
+</code></pre><p>But that was a lie. The useful information was a few lines below:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Media and Data Integrity Errors</td>
+<td><strong>50</strong></td>
+<td>Unrecoverable data-loss events; this should be zero</td>
+</tr>
+<tr>
+<td>Available Spare</td>
+<td><strong>89%</strong></td>
+<td>11% of the reserve had already been consumed</td>
+</tr>
+<tr>
+<td>Percentage Used</td>
+<td><strong>0%</strong></td>
+<td>Essentially no write wear</td>
+</tr>
+<tr>
+<td>Error Information Log Entries</td>
+<td><strong>27,466</strong></td>
+<td>Repeated attempts against failing reads</td>
+</tr>
+</tbody></table>
+<p>NVMe&#39;s overall-health result only fails when a Critical Warning bit is set, and mine was still <code>0x00</code>. The spare-capacity warning would not fire until Available Spare fell below its threshold, 25% on this drive.</p>
+<p>So the headline said <code>PASSED</code> while the counters described a nearly new SSD with 50 unrecoverable errors and 11% of its spare pool already gone. Zero wear made ordinary ageing a poor explanation. This looked like an early-life manufacturing defect.</p>
+<h2>Turning the failure into a rescue</h2>
+<p>At that point the priority changed. I no longer cared about <strong>fixing</strong> the hardware, I wanted a backup of everything that could not be regenerated.</p>
+<p>Reading flash does not consume NAND endurance, writes do. But here I discovered that failed reads are different. The controller retries them aggressively and may relocate a marginal block, <strong>consuming spare capacity</strong> in the process. On this drive the expensive operation was not reading data once, it was repeatedly reading the same damaged regions.</p>
+<p>That shaped the recovery: no separate scan followed by a backup. The <em>backup itself</em> would be the scan.</p>
+<p>We built a one-pass process around <code>tar</code>:</p>
+<pre><code class="hljs language-bash">tar --create --ignore-failed-read --numeric-owner --acls --xattrs \
+    --directory <span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>&quot;</span> -- <span class="hljs-string">&quot;<span class="hljs-variable">$folder</span>&quot;</span> 2&gt;<span class="hljs-string">&quot;<span class="hljs-variable">$log</span>&quot;</span> | \
+    zstd -1 -T0 -o <span class="hljs-string">&quot;<span class="hljs-variable">$dest</span>/<span class="hljs-variable">$folder</span>.tar.zst&quot;</span>
+</code></pre><p><code>--ignore-failed-read</code> logs unreadable files and continues. The stderr log becomes the casualty list while the readable data goes directly to a healthy USB disk.</p>
+<p>Verification happens against that new disk, without touching the NVMe again:</p>
+<pre><code class="hljs language-bash">zstd -t archive.tar.zst &amp;&amp; \
+tar -tf archive.tar.zst --use-compress-program=<span class="hljs-string">&#x27;zstd -d&#x27;</span>
+</code></pre><p>The recovery also forced me to <em>define</em> what was actually irreplaceable. My repositories had GitHub remotes and nothing unpushed. Build caches, Steam libraries, models and downloads could all be recreated. What mattered was much smaller: personal notes, dotfiles, keys, <code>.env</code> files and a couple of <code>google-services.json</code> files.</p>
+<p>That is why this backup was an allow-list rather than an exclude-list. Instead of trying to describe all the disposable bulk on the disk, I named the small set of things that existed nowhere else.</p>
+<p>When the process reached private SSH keys, cloud credentials and a GitHub token, Claude Code&#39;s permission guardrail stopped the action and handed the decision back to me. That was <em>absolutely right</em>! Disaster recovery is not a reason for an agent to move credentials onto an external device without explicit approval.</p>
+<h2>What had happened to the SSD</h2>
+<p>With the important data safe, we could investigate the drive more aggressively.</p>
+<p>The decisive clue was not another counter but a timestamp. One damaged Firefox cache entry had been written on 2025-09-30, ten months before it became unreadable. The write had apparently succeeded, so the data degraded in place.</p>
+<p>SSD bad-block handling is good at catching cells that fail during a write. It is much less helpful when cells accept data and lose their charge later. That explained why Gradle had downloaded valid jars that became unreadable weeks afterwards.</p>
+<p>Successive Btrfs scrubs showed another important pattern:</p>
+<table>
+<thead>
+<tr>
+<th>Scrub</th>
+<th>Read errors</th>
+<th>Corrected</th>
+<th>Uncorrectable</th>
+<th>Files named</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>800</td>
+<td>771</td>
+<td>29</td>
+<td>23</td>
+</tr>
+<tr>
+<td>2</td>
+<td>448</td>
+<td>423</td>
+<td>25</td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>96</td>
+<td>86</td>
+<td>10</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>Each run named different files. Some files that failed once could be read on the next attempt. So it was clear that these were not simply hard-dead sectors that failed consistently, but marginal cells <em>failing probabilistically</em>.</p>
+<p>If that sounds bad, it’s actually worse. A permanently dead sector is at least honest, a scrub finds it every time. A marginal cell can pass today&#39;s scan and fail next week, turning repeated scrubs into whack-a-mole.</p>
+<p>Luckily, every damaged file we found belonged to Steam or Proton, a browser cache or an Android emulator image. Nothing irreplaceable was lost.</p>
+<p>Across four scans, the hardware counters remained stable: Media Errors stayed at 50, Available Spare at 89% and Btrfs <code>corruption_errs</code> at zero. The damaged sectors were concentrated in two clusters inside the first 192 GB of the 2 TB device. The defect looked localised rather than actively spreading, but the drive had already destroyed data twice. It was no longer trustworthy as a system disk.</p>
+<h2>Where this left the drive</h2>
+<p>I claimed the warranty. In the EU, the two-year legal guarantee of conformity is provided by the seller and is independent of the manufacturer&#39;s warranty. The drive was about twelve months old, and one conversation with the retailer produced an approved refund.</p>
+<p>The diagnostic evidence made the case straightforward: normal temperatures, 0% wear, 50 media errors and defects concentrated in one physical region. This was not a drive worn out by heavy use.</p>
+<p>Whether I will immediately replace it is a separate question. A comparable 2 TB SSD currently costs much more than I paid, while this one fails loudly: reads return <code>EIO</code> rather than silently producing corrupted bytes, and Btrfs reported no checksum corruption across four scans. That might make it tolerable as scratch space for Steam libraries or build caches, data that is never the only copy, but never again as the disk holding my home directory.</p>
+<p>The lesson worth keeping has nothing to do with SMART counters or NVMe error codes. It&#39;s that, left alone, I might never have suspected the disk at all: I would still be debugging Gradle, because that is what the symptom told me to do. It took Claude Code to see how much distance a failure can put between itself and its first symptom.</p>
+<p>An Android build said it could not dex a jar. Gradle made that look like a software problem. The stacktrace turned it into an I/O problem. The kernel turned it into an NVMe problem. It was Claude Code that followed that chain down, tested every layer and recovered the data once we reached the bottom. My job was mostly asking for evidence and approving the next step.</p>
+<p>A failing disk wears the mask of whatever touches the bad sector first. This one happened to look like Gradle.</p>
+<p>If I had kept using that NVMe as my primary disk, my data would have been lost in time, like tears in rain.</p>
+
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-foot">
+    <div class="foot-row">
+      <p>&copy; <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
+      <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+    </div>
+  </footer>
+
+  <script src="/main.js?v2" defer></script>
+</body>
+</html>
