@@ -22,10 +22,12 @@
   <meta name="twitter:title" content="Edoardo Dusi — Developer Relations" />
   <meta name="twitter:description" content="DevRel Team Manager at Storyblok. Podcaster, speaker, and writer based in Bologna, Italy." />
   <meta name="twitter:image" content="https://edoardodusi.com/og.jpg" />
-  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f766e'/%3E%3Ctext x='50' y='68' font-size='52' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3Ee%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/icon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180.png" />
 
   <script>
     (function () {
@@ -34,7 +36,7 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="main.css?v3" />
+  <link rel="stylesheet" href="main.css?v19" />
 
   <script type="application/ld+json">
   {
@@ -91,18 +93,26 @@
 
   <main id="top">
 
-    <section class="hero reveal">
-      <p class="kicker">Bologna, Italy</p>
-      <h1>Edoardo Dusi</h1>
-      <p class="tagline">I lead Developer Relations &amp; Community at <a href="https://www.storyblok.com" rel="noopener">Storyblok</a>.</p>
-      <p class="intro">
-        Engineer turned Developer Advocate after decades of building for the web. I speak at
-        conferences around Europe, write about JavaScript, open source, software architecture
-        and cybersecurity, and host an Italian tech-news podcast.
-      </p>
-      <p class="intro" style="margin-top: 1rem;">
-        <a href="blog/" style="text-decoration: none; color: var(--accent);">Here's my blog &rarr;</a>
-      </p>
+    <section class="hero home-hero reveal">
+      <div class="hero-text">
+        <p class="kicker">Bologna, Italy</p>
+        <h1>Edoardo Dusi</h1>
+        <p class="tagline">I lead Developer Relations &amp; Community at <a href="https://www.storyblok.com" rel="noopener">Storyblok</a>.</p>
+        <p class="intro">
+          Engineer turned Developer Advocate after decades of building for the web. I speak at
+          conferences around Europe, write about JavaScript, open source, software architecture
+          and cybersecurity, and host an Italian tech-news podcast.
+        </p>
+        <p class="intro cta-line">
+          <a class="cta" href="blog/">Here's my blog &rarr;</a>
+        </p>
+      </div>
+      <figure class="hero-figure">
+        <picture>
+          <source srcset="img/edo-stage.webp" type="image/webp" />
+          <img src="img/edo-stage.jpg" alt="Edoardo Dusi speaking on stage, wearing a headset microphone and mid-gesture." width="1000" height="1100" decoding="async" />
+        </picture>
+      </figure>
     </section>
 
     <section id="work" class="section reveal">
@@ -130,7 +140,7 @@
       <ol class="stack">
         <li class="row">
           <div class="row-main">
-            <a href="https://open.spotify.com/show/4B2I1RTHTS5YkbCYfLCveU" rel="noopener">Buongiorno da Edo</a>
+            <a href="https://www.youtube.com/playlist?list=PLCQLaXN5zs956lPTQ4TrBFHJjHKqezoXe" rel="noopener">Buongiorno da Edo</a>
             <p>A few minutes on a tech story that caught my eye: coding, AI, open source, security, the internet. In Italian, 300+ episodes and counting.
               <span class="sublinks"><a href="https://open.spotify.com/show/4B2I1RTHTS5YkbCYfLCveU" rel="noopener">Spotify</a> · <a href="https://podcasts.apple.com/us/podcast/buongiorno-da-edo/id1641061765" rel="noopener">Apple Podcasts</a> · <a href="https://www.youtube.com/playlist?list=PLCQLaXN5zs956lPTQ4TrBFHJjHKqezoXe" rel="noopener">YouTube</a></span>
             </p>
@@ -139,7 +149,7 @@
         </li>
         <li class="row">
           <div class="row-main">
-            <a href="https://open.spotify.com/show/1xNXGXiZzazwqKycTS8WyG" rel="noopener">Continuous Delivery</a>
+            <a href="https://www.youtube.com/@ContinuousDeliverySpark" rel="noopener">Continuous Delivery</a>
             <p>Weekly Italian podcast with guests I made with SparkFabrik: web development, DevOps, and cloud native. 105 episodes, concluded with a “Final Delivery.”
               <span class="sublinks"><a href="https://open.spotify.com/show/1xNXGXiZzazwqKycTS8WyG" rel="noopener">Spotify</a> · <a href="https://podcasts.apple.com/it/podcast/continuous-delivery/id1541007956" rel="noopener">Apple Podcasts</a> · <a href="https://www.youtube.com/@ContinuousDeliverySpark" rel="noopener">YouTube</a></span>
             </p>
@@ -151,6 +161,51 @@
 
     <section id="speaking" class="section reveal">
       <h2><span class="section-num">03</span>Speaking</h2>
+
+      <div class="talk-strip" tabindex="0" role="group" aria-label="Photographs from recent talks (scrollable)">
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/1-react-summit.webp" type="image/webp" />
+            <img src="img/talks/1-react-summit.jpg" alt="On stage at React Summit, standing beside a branded lectern in front of a large screen." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">React Summit</span><span class="ts-city">Amsterdam</span></figcaption>
+        </figure>
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/2-auditorium.webp" type="image/webp" />
+            <img src="img/talks/2-auditorium.jpg" alt="Presenting in a hotel auditorium wearing a Commodore 64 shirt." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">containerday</span><span class="ts-city">Bologna</span></figcaption>
+        </figure>
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/3-mainstage.webp" type="image/webp" />
+            <img src="img/talks/3-mainstage.jpg" alt="On a red-curtained stage with both hands raised, mid-explanation." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">HackInBo</span><span class="ts-city">Bologna</span></figcaption>
+        </figure>
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/4-open-source.webp" type="image/webp" />
+            <img src="img/talks/4-open-source.jpg" alt="At a wooden lectern beside a slide reading “Open Source Revolution”." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">phpday</span><span class="ts-city">Verona</span></figcaption>
+        </figure>
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/5-audience.webp" type="image/webp" />
+            <img src="img/talks/5-audience.jpg" alt="Standing beside a screen reading “PHP Strikes Back” in front of a seated audience." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">Come To Code</span><span class="ts-city">Pignola</span></figcaption>
+        </figure>
+        <figure class="talk-shot">
+          <picture>
+            <source srcset="img/talks/6-basilica.webp" type="image/webp" />
+            <img src="img/talks/6-basilica.jpg" alt="Speaking in a baroque hall beside a slide about the GNU principles." width="1080" height="1920" loading="lazy" decoding="async" />
+          </picture>
+          <figcaption><span class="ts-event">DevFest Modena</span><span class="ts-city">Modena</span></figcaption>
+        </figure>
+      </div>
 
       <h3 class="year">2026</h3>
       <ol class="stack">
@@ -181,7 +236,8 @@
       <h3 class="year">2024</h3>
       <ol class="stack">
         <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://www.wearedevelopers.com/sessions/webassembly-the-next-frontier-of-cloud-computing" rel="noopener">WeAreDevelopers World Congress</a> · Berlin — <a href="https://www.wearedevelopers.com/en/videos/972/webassembly-the-next-frontier-of-cloud-computing-1724180870" rel="noopener">watch</a></p></div><span class="row-meta">Jul 2024</span></li>
-        <li class="row"><div class="row-main"><span class="talk">Non siete obbligati a contribuire all’Open Source</span><p class="venue"><a href="https://www.wemakefuture.it/r/63c565167a85ea62cd3ffebd/" rel="noopener">We Make Future</a> · Rimini</p></div><span class="row-meta">Jun 2024</span></li>
+        <li class="row"><div class="row-main"><span class="talk">When Dependabot Is Not Enough: Protecting Our Software Supply Chain</span><p class="venue"><a href="https://www.hackinbo.it/singolo-relatore.php?id=132" rel="noopener">HackInBo</a> · Bologna — <a href="https://www.youtube.com/watch?v=JQLgBuRW_p8" rel="noopener">watch</a></p></div><span class="row-meta">Jun 2024</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Non siete obbligati a contribuire all’Open Source</span><p class="venue"><a href="https://www.wemakefuture.it/r/63c565167a85ea62cd3ffebd/" rel="noopener">We Make Future</a> · Bologna</p></div><span class="row-meta">Jun 2024</span></li>
         <li class="row"><div class="row-main"><span class="talk">JavaScript Supply Chain Security: How Are We Doing?</span><p class="venue"><a href="https://developerweekmanagement2024.sched.com/speaker/edoardo_dusi.26qbi0jb" rel="noopener">DeveloperWeek Global</a> · online</p></div><span class="row-meta">Jun 2024</span></li>
         <li class="row"><div class="row-main"><span class="talk">Server Components Are React’s Superweapon: Can PHP Strike Back?</span><p class="venue"><a href="https://www.devoxx.com/speaker/edoardo-dusi" rel="noopener">Voxxed Days Trieste</a> · Trieste — <a href="https://youtu.be/OgZgqcyTIRY" rel="noopener">watch</a></p></div><span class="row-meta">May 2024</span></li>
         <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://2024.osday.dev/it/speakers" rel="noopener">Open Source Day</a> · Florence — <a href="https://youtu.be/qJWafRo0q5E" rel="noopener">watch</a></p></div><span class="row-meta">Mar 2024</span></li>
@@ -194,7 +250,7 @@
         <li class="row"><div class="row-main"><span class="talk">React vs. the Rest of the Web: Civil War</span><p class="venue"><a href="https://www.reactjsday.it/speaker/edoardo-dusi/" rel="noopener">reactjsday</a> · Verona — <a href="https://youtu.be/IUw5oe5fhE8" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2023</span></li>
         <li class="row"><div class="row-main"><span class="talk">WebAssembly: The Next Frontier of Cloud Computing</span><p class="venue"><a href="https://2023.containerday.it/schedule/#webassembly:-the-next-frontier-of-cloud-computing-2" rel="noopener">containerday</a> · Bologna — <a href="https://www.youtube.com/watch?v=tkd8CZnhz8E" rel="noopener">watch</a></p></div><span class="row-meta">Oct 2023</span></li>
         <li class="row"><div class="row-main"><span class="talk">Clash of JS: The Same App Built With Different JavaScript Frameworks</span><p class="venue">Come To Code · Pignola — <a href="https://www.youtube.com/watch?v=LyeL1CMPQrM" rel="noopener">watch</a></p></div><span class="row-meta">Sep 2023</span></li>
-        <li class="row"><div class="row-main"><span class="talk">Developer Relations, strategia e KPI in un’azienda di servizi</span><p class="venue"><a href="https://www.wemakefuture.it/r/63c565167a85ea62cd3ffebd/" rel="noopener">We Make Future</a> · Bologna</p></div><span class="row-meta">Jun 2023</span></li>
+        <li class="row"><div class="row-main"><span class="talk">Developer Relations, strategia e KPI in un’azienda di servizi</span><p class="venue"><a href="https://www.wemakefuture.it/r/63c565167a85ea62cd3ffebd/" rel="noopener">We Make Future</a> · Rimini</p></div><span class="row-meta">Jun 2023</span></li>
         <li class="row"><div class="row-main"><span class="talk">Testing Web Apps With Cypress in CI</span><p class="venue"><a href="https://developerweekeurope2023.sched.com/speaker/edoardo_dusi.257g5w49" rel="noopener">DeveloperWeek Europe</a> · online</p></div><span class="row-meta">Apr 2023</span></li>
         <li class="row"><div class="row-main"><span class="talk">The Perfect CI/CD React Native Pipeline With Fastlane</span><p class="venue"><a href="https://www.wearedevelopers.com/sessions/the-perfect-ci-cd-react-native-pipeline-with-fastlane" rel="noopener">WeAreDevelopers Live</a> · online — <a href="https://www.youtube.com/live/iV-bZubGWsE?t=255" rel="noopener">watch</a></p></div><span class="row-meta">Mar 2023</span></li>
         <li class="row"><div class="row-main"><span class="talk">Testing Web Apps With Cypress in CI</span><p class="venue"><a href="https://www.webdayconf.it/e/sessione/3112/Testing-web-apps-with-Cypress-in-CI" rel="noopener">Web Day</a> · Milan</p></div><span class="row-meta">Mar 2023</span></li>
@@ -318,6 +374,6 @@
     </div>
   </footer>
 
-  <script src="main.js?v2" defer></script>
+  <script src="main.js?v5" defer></script>
 </body>
 </html>

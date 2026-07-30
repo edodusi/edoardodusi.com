@@ -5,10 +5,36 @@
   var root = document.documentElement;
   var toggle = document.getElementById('theme-toggle');
 
+  // The two <meta name="theme-color"> tags are media-scoped, so they track the
+  // OS preference and ignore a manual toggle. Point the mobile browser chrome
+  // at the theme actually on screen with a third, unscoped tag. The colour is
+  // read back from --bg rather than repeated here, so the CSS stays the only
+  // place a ground colour is defined.
+  function syncThemeColor() {
+    var ground = getComputedStyle(root).getPropertyValue('--bg').trim();
+    if (!ground) return;
+
+    var tag = document.getElementById('active-theme-color');
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.id = 'active-theme-color';
+      tag.name = 'theme-color';
+      document.head.appendChild(tag);
+    }
+    tag.content = ground;
+  }
+
+  function applyTheme(theme) {
+    root.dataset.theme = theme;
+    syncThemeColor();
+  }
+
+  applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
+
   if (toggle) {
     toggle.addEventListener('click', function () {
       var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      root.dataset.theme = next;
+      applyTheme(next);
       localStorage.setItem('theme', next);
     });
   }
@@ -16,7 +42,7 @@
   // Follow OS changes unless the user picked a theme explicitly.
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
     if (!localStorage.getItem('theme')) {
-      root.dataset.theme = e.matches ? 'dark' : 'light';
+      applyTheme(e.matches ? 'dark' : 'light');
     }
   });
 
@@ -153,5 +179,32 @@
         }
       }
     });
+  }
+
+  // --- Hero parallax ----------------------------------------------------
+  // The figure drifts up a little slower than the page, so it reads as sitting
+  // behind the type rather than pasted onto it. Deliberately small — a few dozen
+  // pixels over the whole hero. Moves the figure as a whole, photo and yellow
+  // block together, so the offset between them stays fixed. Skipped entirely
+  // when reduced motion is preferred.
+  var heroImg = document.querySelector('.hero-figure');
+  if (heroImg && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var ticking = false;
+
+    var place = function () {
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var shift = Math.min(y * 0.12, 46);
+      heroImg.style.transform = 'translate3d(0,' + (-shift).toFixed(1) + 'px,0)';
+      ticking = false;
+    };
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(place);
+      }
+    }, { passive: true });
+
+    place();
   }
 })();

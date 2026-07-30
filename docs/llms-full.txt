@@ -5,9 +5,9 @@
 
 ---
 
-# "Error while dexing": how an Android build failure led me to a dying SSD
+# “Error while dexing”: how an Android build failure led me to a dying SSD
 URL: https://edoardodusi.com/blog/2026/error-while-dexing.html
-Date: 2026-07-29
+Date: 2026-07-30
 Reading time: 8 min
 
 A dying disk doesn't announce itself like Roy Batty, with tears in rain. It sneaks in wearing a mask: the face of the first thing that happens to touch a bad sector.

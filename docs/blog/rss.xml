@@ -5,21 +5,21 @@
   <link>https://edoardodusi.com/blog</link>
   <description>Articles, thoughts, and updates from Edoardo Dusi</description>
   <language>en-us</language>
-  <lastBuildDate>Thu, 30 Jul 2026 14:44:56 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 30 Jul 2026 16:48:11 GMT</lastBuildDate>
   <atom:link href="https://edoardodusi.com/blog/rss.xml" rel="self" type="application/rss+xml" />
   
     <item>
-      <title><![CDATA["Error while dexing": how an Android build failure led me to a dying SSD]]></title>
+      <title><![CDATA[“Error while dexing”: how an Android build failure led me to a dying SSD]]></title>
       <link>https://edoardodusi.com/blog/2026/error-while-dexing.html</link>
       <description><![CDATA[An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery.]]></description>
-      <pubDate>Wed, 29 Jul 2026 00:00:00 GMT</pubDate>
+      <pubDate>Thu, 30 Jul 2026 00:00:00 GMT</pubDate>
       <guid>https://edoardodusi.com/blog/2026/error-while-dexing.html</guid>
     </item>
   
     <item>
       <title><![CDATA[Welcome to my new website and blog!]]></title>
       <link>https://edoardodusi.com/blog/2026/welcome.html</link>
-      <description><![CDATA[I finally decided to build a proper home on the internet. Here's a look under the hood of my new custom static site and markdown blog.]]></description>
+      <description><![CDATA[I finally decided to build a proper home on the internet. Here’s a look under the hood of my new custom static site and markdown blog.]]></description>
       <pubDate>Fri, 24 Jul 2026 00:00:00 GMT</pubDate>
       <guid>https://edoardodusi.com/blog/2026/welcome.html</guid>
     </item>

@@ -4,19 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Welcome to my new website and blog! — Edoardo Dusi</title>
-  <meta name="description" content="I finally decided to build a proper home on the internet. Here&#39;s a look under the hood of my new custom static site and markdown blog." />
+  <meta name="description" content="I finally decided to build a proper home on the internet. Here’s a look under the hood of my new custom static site and markdown blog." />
   <link rel="canonical" href="https://edoardodusi.com/blog/2026/welcome.html" />
   <meta name="view-transition" content="same-origin" />
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Welcome to my new website and blog!" />
-  <meta property="og:description" content="I finally decided to build a proper home on the internet. Here&#39;s a look under the hood of my new custom static site and markdown blog." />
+  <meta property="og:description" content="I finally decided to build a proper home on the internet. Here’s a look under the hood of my new custom static site and markdown blog." />
   <meta property="og:image" content="https://edoardodusi.com/blog/2026/welcome-og.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f766e'/%3E%3Ctext x='50' y='68' font-size='52' font-family='Georgia,serif' font-style='italic' fill='white' text-anchor='middle'%3Ee%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/icon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180.png" />
   <link rel="alternate" type="application/rss+xml" title="Edoardo Dusi's Blog RSS Feed" href="https://edoardodusi.com/blog/rss.xml" />
 
   <script type="application/ld+json">
@@ -26,7 +28,7 @@
     "headline": "Welcome to my new website and blog!",
     "image": "https://edoardodusi.com/blog/2026/welcome-og.png",
     "datePublished": "2026-07-24T00:00:00.000Z",
-    "description": "I finally decided to build a proper home on the internet. Here's a look under the hood of my new custom static site and markdown blog.",
+    "description": "I finally decided to build a proper home on the internet. Here’s a look under the hood of my new custom static site and markdown blog.",
     "author": {
       "@type": "Person",
       "name": "Edoardo Dusi",
@@ -41,35 +43,72 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="/main.css?v3" />
+  <link rel="stylesheet" href="/main.css?v19" />
   <link rel="stylesheet" href="/syntax.css" />
   
   <style>
-    /* Minimal Markdown styling */
-    /* Section headings echo the article title's serif face. */
-    .blog-content h2, .blog-content h3, .blog-content h4 {
-      font-family: Georgia, "Times New Roman", serif;
-      font-weight: 400;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
+    /* --- Reading typography -------------------------------------------------
+       Set from readability research rather than taste:
+         · Literata for the body — commissioned for long-form screen reading.
+         · 19px, inside the 18–20px band that measurably helps long-form.
+         · line-height 1.7, comfortably above the WCAG 2.2 floor of 1.5.
+         · 66ch measure, the documented sweet spot (50–75 acceptable).
+       The measure is applied to the text elements, NOT the container, so code
+       blocks, tables and images still get the full column width.
+    --------------------------------------------------------------------- */
+    .blog-content {
+      --measure: 66ch;
+      font-family: "Literata", Charter, "Bitstream Charter", Georgia, serif;
+      font-size: 1.1875rem;
+      line-height: 1.7;
+      font-synthesis: none;
     }
-    .blog-content h2 { font-size: 2.5rem; margin: 3.25rem 0 1.1rem; }
-    .blog-content h3 { font-size: 1.6rem; margin: 2.5rem 0 0.85rem; }
+
+    .blog-content > p,
+    .blog-content > ul,
+    .blog-content > ol,
+    .blog-content > blockquote,
+    .blog-content > h2,
+    .blog-content > h3,
+    .blog-content > h4 {
+      max-width: var(--measure);
+    }
+
+    /* Hanging punctuation and better break choices where supported. */
+    .blog-content > p { text-wrap: pretty; }
+
+    /* Minimal Markdown styling */
+    /* Section headings share the article title's display face (Anton, the logo
+       face). Left in sentence case rather than uppercase — post headings run
+       long, and Anton's condensed caps get hard to read at that length. */
+    .blog-content h2, .blog-content h3, .blog-content h4 {
+      font-family: var(--display);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: 0.002em;
+      /* The article body also carries .section, whose h2 rule uppercases.
+         Undo it explicitly — post headings are sentences, not labels. */
+      text-transform: none;
+    }
+    .blog-content h2 { font-size: 2.15rem; margin: 3.25rem 0 1.1rem; }
+    .blog-content h3 { font-size: 1.5rem; margin: 2.5rem 0 0.85rem; }
     .blog-content h4 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }
-    .blog-content p { margin-bottom: 1.5rem; }
-    .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+    .blog-content p { margin-bottom: 1.4em; }
+    .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; text-decoration-thickness: 1px; }
     .blog-content a:hover { text-decoration-color: var(--accent); }
-    .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
     .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0; }
     .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus { opacity: 1; }
     .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
     .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
-    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.9em; line-height: 1.5; background: transparent; }
+    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; }
     .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
     .blog-content li { margin-bottom: 0.5rem; }
     .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
     .blog-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem 0; }
+    /* Brand yellow can't be text on paper, so it works as a highlighter instead. */
+    .blog-content mark { background: var(--marker); color: var(--marker-fg); padding: 0.05em 0.25em; border-radius: 2px; }
 
     /* Tables: horizontal rules only, generous breathing room, scrollable on narrow screens. */
     .blog-content .table-wrap { margin: 3rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -185,6 +224,6 @@
     </div>
   </footer>
 
-  <script src="/main.js?v2" defer></script>
+  <script src="/main.js?v5" defer></script>
 </body>
 </html>

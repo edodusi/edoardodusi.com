@@ -1,6 +1,6 @@
 ---
 title: "\"Error while dexing\": how an Android build failure led me to a dying SSD"
-date: "2026-07-29"
+date: "2026-07-30"
 tags: ["Storage", "AI", "Linux", "Hardware"]
 excerpt: "An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery."
 ---

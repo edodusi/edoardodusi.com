@@ -49,6 +49,18 @@ function escapeJsonString(value) {
   return JSON.stringify(String(value)).slice(1, -1);
 }
 
+// Straight quotes read as prime marks in display type, badly so in a condensed
+// face. Applied to titles and excerpts, so the page, OG image, RSS and JSON-LD
+// all carry the same text.
+function typographicQuotes(value) {
+  return String(value)
+    .replace(/(^|[\s([{—–-])"/g, '$1“')
+    .replace(/"/g, '”')
+    .replace(/(\p{L})'(\p{L})/gu, '$1’$2')
+    .replace(/(^|[\s([{])'/g, '$1‘')
+    .replace(/'/g, '’');
+}
+
 async function downloadFont(url, dest) {
   if (fs.existsSync(dest)) return fs.readFileSync(dest);
   console.log('Downloading Inter font...');
@@ -77,9 +89,9 @@ async function build() {
     const content = fs.readFileSync(path.join(contentDir, file), 'utf-8');
     const parsed = fm(content);
     
-    const title = parsed.attributes.title || 'Untitled';
+    const title = typographicQuotes(parsed.attributes.title || 'Untitled');
     const date = parsed.attributes.date ? new Date(parsed.attributes.date) : new Date();
-    const excerpt = parsed.attributes.excerpt || '';
+    const excerpt = typographicQuotes(parsed.attributes.excerpt || '');
     const slug = file.replace('.md', '');
     
     const year = date.getFullYear().toString();

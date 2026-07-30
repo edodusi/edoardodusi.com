@@ -1,31 +1,135 @@
 /* ---------------------------------------------------------------------------
    edoardodusi.com — minimal, elegant, fast.
-   No external requests: system fonts, inline icons.
+   No external requests: self-hosted display face, system body font,
+   inline icons.
+
+   Palette follows the YouTube channel: navy #0a1543 and yellow #ffd500,
+   sampled from the banner and icon. Navy does double duty — ink in light
+   mode, ground in dark mode. Yellow is legible on navy but invisible on
+   paper (1.3:1), so in light mode it is a marker only, never text; links
+   there use the brick red from the sunglasses instead.
 --------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
+/* Anton — the logo face. Display roles only. */
+@font-face {
+  font-family: "Anton";
+  src: url("/fonts/anton-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Literata — article body only. Google commissioned it for Play Books
+   specifically for reading full-length text on screen, which is exactly this
+   job. Variable weight axis, so roman + italic is the whole family in 106 KB. */
+@font-face {
+  font-family: "Literata";
+  src: url("/fonts/literata-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Literata";
+  src: url("/fonts/literata-latin-wght-italic.woff2") format("woff2-variations");
+  font-weight: 200 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Theme values live here once. The selectors below only ever assign them, so a
+   colour is edited in exactly one place no matter how many ways a visitor can
+   end up in a given theme. */
 :root {
-  --bg: #f2efe9;
-  --fg: #1a1a1a;
-  --muted: #6b6a66;
-  --faint: #767470;
-  --line: rgba(26, 26, 26, 0.1);
-  --accent: #0f766e;
-  --accent-soft: rgba(15, 118, 110, 0.08);
-  --nav-bg: rgba(250, 249, 247, 0.82);
+  /* Light — warm paper, navy ink, brick links, yellow as a marker only. */
+  --l-bg: #f7f5ef;
+  --l-fg: #191c26;
+  --l-muted: #575b66;
+  --l-faint: #666a75;
+  --l-line: rgba(25, 28, 38, 0.13);
+  --l-accent: #9e4034;
+  --l-accent-soft: rgba(158, 64, 52, 0.09);
+  --l-nav-bg: rgba(253, 252, 247, 0.82);
+  --l-wash: rgba(10, 21, 67, 0.07);
+
+  /* Dark — neutral ground, not blue-tinted: the navy belongs in the masthead
+     wash and the nav band. Lifted off black to take the glare off articles. */
+  --d-bg: #121213;
+  --d-fg: #e6e7e8;
+  --d-muted: #a2a2a5;
+  --d-faint: #8f8f93;
+  --d-line: rgba(230, 231, 232, 0.14);
+  --d-accent: #ffd500;
+  --d-accent-soft: rgba(255, 213, 0, 0.11);
+  --d-nav-bg: rgba(10, 21, 67, 0.88);
+  --d-wash: rgba(10, 21, 67, 0.62);
+
+  /* Theme-independent. */
+  --marker: #ffd500;
+  --marker-fg: #0a1543;
+  --display: "Anton", "Arial Narrow", Impact, sans-serif;
+}
+
+/* Default: light. */
+:root {
+  --bg: var(--l-bg);
+  --fg: var(--l-fg);
+  --muted: var(--l-muted);
+  --faint: var(--l-faint);
+  --line: var(--l-line);
+  --accent: var(--l-accent);
+  --accent-soft: var(--l-accent-soft);
+  --nav-bg: var(--l-nav-bg);
+  --wash: var(--l-wash);
   color-scheme: light;
 }
 
+/* Honour the OS preference with CSS alone, so dark mode survives JS being
+   disabled or the inline theme script failing. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--d-bg);
+    --fg: var(--d-fg);
+    --muted: var(--d-muted);
+    --faint: var(--d-faint);
+    --line: var(--d-line);
+    --accent: var(--d-accent);
+    --accent-soft: var(--d-accent-soft);
+    --nav-bg: var(--d-nav-bg);
+    --wash: var(--d-wash);
+    color-scheme: dark;
+  }
+}
+
+/* The toggle stamps data-theme on the root. These come last so an explicit
+   choice beats the media query in BOTH directions — including light-on-a-
+   dark-OS, which the media query would otherwise win. */
 :root[data-theme="dark"] {
-  --bg: #121314;
-  --fg: #eceae6;
-  --muted: #a3a19b;
-  --faint: #9c9a94;
-  --line: rgba(236, 234, 230, 0.12);
-  --accent: #4fd1c5;
-  --accent-soft: rgba(79, 209, 197, 0.09);
-  --nav-bg: rgba(18, 19, 20, 0.82);
+  --bg: var(--d-bg);
+  --fg: var(--d-fg);
+  --muted: var(--d-muted);
+  --faint: var(--d-faint);
+  --line: var(--d-line);
+  --accent: var(--d-accent);
+  --accent-soft: var(--d-accent-soft);
+  --nav-bg: var(--d-nav-bg);
+  --wash: var(--d-wash);
   color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: var(--l-bg);
+  --fg: var(--l-fg);
+  --muted: var(--l-muted);
+  --faint: var(--l-faint);
+  --line: var(--l-line);
+  --accent: var(--l-accent);
+  --accent-soft: var(--l-accent-soft);
+  --nav-bg: var(--l-nav-bg);
+  --wash: var(--l-wash);
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,13 +146,17 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Brand navy as a masthead wash rather than the page ground: it holds the top
+   of the document, the way the channel banner does, then clears to a
+   near-neutral ground so long articles aren't read on saturated blue.
+   Document-anchored (not fixed), so it scrolls away and doesn't follow. */
 body::before {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 50vh;
-  background: radial-gradient(ellipse at 15% 0%, var(--accent-soft) 0%, transparent 60%),
-              radial-gradient(ellipse at 85% 0%, rgba(15, 118, 110, 0.05) 0%, transparent 60%);
+  height: 46vh;
+  background: linear-gradient(180deg, var(--wash) 0%, transparent 100%),
+              radial-gradient(ellipse at 82% 0%, var(--accent-soft) 0%, transparent 55%);
   pointer-events: none;
   z-index: -1;
 }
@@ -108,9 +216,10 @@ a:hover, a:focus-visible {
 }
 
 .brand {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-size: 1.35rem;
+  font-family: var(--display);
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
   text-decoration: none;
   margin-right: auto;
   flex-shrink: 0;
@@ -176,8 +285,21 @@ a:hover, a:focus-visible {
   transform: translateY(-6px) rotate(-45deg);
 }
 
+/* Which icon shows must also work before data-theme exists, otherwise a no-JS
+   visitor sees both a sun and a moon in the button. Same cascade order as the
+   tokens: default, then OS preference, then the explicit choice. */
+.icon-moon { display: none; }
+.icon-sun { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  .icon-sun { display: none; }
+  .icon-moon { display: block; }
+}
+
+:root[data-theme="light"] .icon-sun { display: block; }
 :root[data-theme="light"] .icon-moon { display: none; }
 :root[data-theme="dark"] .icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: block; }
 
 /* --- Layout --------------------------------------------------------------- */
 
@@ -191,6 +313,66 @@ main {
 
 .hero { padding: 5.5rem 0 4rem; }
 
+/* The homepage hero borrows the channel banner's composition: wordmark left,
+   figure right. The photograph is a hard-edged panel offset from a solid
+   yellow block — the one place brand yellow gets to be loud. No rounded
+   corners and no soft shadow: the brand's geometry is blocky, so the frame is
+   too. */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(15rem, 34%, 21rem);
+  align-items: end;
+  gap: 1.75rem;
+  padding-bottom: 3rem;
+}
+
+.hero-figure {
+  position: relative;
+  align-self: end;
+  margin: 0;
+  line-height: 0;
+  will-change: transform;
+}
+
+.hero-figure::before {
+  content: "";
+  position: absolute;
+  left: 1.05rem;
+  right: -1.05rem;
+  top: 1.05rem;
+  bottom: -1.05rem;
+  background: var(--marker);
+  z-index: 0;
+}
+
+.hero-figure img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cta-line { margin-top: 1rem; }
+
+.cta {
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.cta:hover, .cta:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+
+/* Below this the figure has no room to be a figure — it lands under the text as
+   a cropped thumbnail with a yellow bar through it. Better absent than weak. */
+@media (max-width: 720px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .hero-figure { display: none; }
+}
+
 .kicker {
   font-size: 0.8rem;
   letter-spacing: 0.14em;
@@ -200,11 +382,13 @@ main {
 }
 
 .hero h1 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(2.6rem, 7vw, 3.8rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.9rem, 8vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-wrap: balance;
   margin-bottom: 1.25rem;
 }
 
@@ -229,34 +413,147 @@ main {
 }
 
 .section h2 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.6rem;
+  font-family: var(--display);
+  font-size: 1.75rem;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
   margin-bottom: 2rem;
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
+  position: relative;
 }
 
 .section-num {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
+  font-family: var(--display);
   font-weight: 400;
   color: var(--accent);
   letter-spacing: 0;
 }
 
+/* Where there's room, the number hangs outside the text column at display size:
+   it gives the page a spine and breaks the single-column monotony without
+   moving any content. Inside the column it stays inline (see .section h2). */
+@media (min-width: 1120px) {
+  .section h2 { gap: 0; }
+
+  .section-num {
+    position: absolute;
+    right: calc(100% + 1.75rem);
+    top: -0.25em;
+    font-size: 3.4rem;
+    line-height: 1;
+    opacity: 0.9;
+  }
+}
+
 .year {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
+  font-family: var(--display);
   font-weight: 400;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--faint);
   margin: 1.75rem 0 0.5rem;
 }
 
 .year:first-of-type { margin-top: 0; }
+
+/* --- Talk photos ------------------------------------------------------------ */
+
+/* Evidence, not decoration: the Speaking list asks a visitor to take the talks
+   on faith, so the section opens with proof. A swipeable strip rather than a
+   grid — it stays one row tall on every width, and the cut-off edge is itself
+   the affordance that there's more. */
+.talk-strip {
+  --shot-h: 15rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  margin: -0.5rem 0 2.75rem;
+  padding-bottom: 0.8rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Sized by height so the photos keep their native 9:16; the width is derived
+   from it rather than measured, which keeps the caption column the same width
+   as the image. --shot-h is the single number to tune. */
+.talk-shot {
+  flex: 0 0 auto;
+  width: calc(var(--shot-h) * 9 / 16);
+  margin: 0;
+  scroll-snap-align: start;
+}
+
+.talk-shot picture {
+  display: block;
+  position: relative;
+  height: var(--shot-h);
+  line-height: 0;
+}
+
+.talk-shot img {
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: filter 0.25s ease;
+}
+
+/* A yellow rule slides under the photo you're looking at. */
+.talk-shot picture::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--marker);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.talk-shot:hover picture::after { transform: scaleX(1); }
+.talk-shot:hover img { filter: brightness(1.06); }
+
+/* Conference names keep their own casing — several are deliberately lowercase
+   brands (containerday, phpday), so no uppercasing here. */
+.talk-shot figcaption {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.ts-event {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.ts-city {
+  font-size: 0.68rem;
+  color: var(--faint);
+}
+
+.talk-strip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .talk-strip { --shot-h: 12rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .talk-shot::after { transition: none; }
+}
 
 /* --- Rows ------------------------------------------------------------------ */
 
