@@ -197,9 +197,11 @@ async function build() {
     const ogFileName = `${slug}-og.png`;
     fs.writeFileSync(path.join(yearDir, ogFileName), pngBuffer);
 
-    const htmlContent = marked.parse(parsed.body);
+    // Wrap tables so wide ones scroll horizontally instead of overflowing the column.
+    const htmlContent = marked.parse(parsed.body)
+      .replace(/<table>[\s\S]*?<\/table>/g, (t) => `<div class="table-wrap">${t}</div>`);
     const relativeUrl = `${year}/${slug}.html`;
-    const ogImageUrl = `{{https://edoardodusi.com/blog/${year}}}/${ogFileName}`;
+    const ogImageUrl = `https://edoardodusi.com/blog/${year}/${ogFileName}`;
 
     const wordCount = parsed.body.trim().split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -226,7 +228,7 @@ async function build() {
       .replace(/{{reading_time}}/g, `${readingTime} min read`)
       .replace(/{{content}}/g, htmlContent)
       .replace(/{{excerpt}}/g, escapeHtml(excerpt))
-      .replace(/{{url}}/g, `{{https://edoardodusi.com/blog/${relativeUrl}}}`)
+      .replace(/{{url}}/g, `https://edoardodusi.com/blog/${relativeUrl}`)
       .replace(/{{og_image}}/g, ogImageUrl)
       .replace(/{{tags}}/g, pageTagsHtml);
 
@@ -262,10 +264,10 @@ async function build() {
   const rssItems = posts.map(post => `
     <item>
       <title><![CDATA[${post.title}]]></title>
-      <link>{{https://edoardodusi.com/blog/${post.url}}}</link>
+      <link>https://edoardodusi.com/blog/${post.url}</link>
       <description><![CDATA[${post.excerpt}]]></description>
       <pubDate>${post.date.toUTCString()}</pubDate>
-      <guid>{{https://edoardodusi.com/blog/${post.url}}}</guid>
+      <guid>https://edoardodusi.com/blog/${post.url}</guid>
     </item>
   `).join('');
 
@@ -291,7 +293,7 @@ async function build() {
   ];
 
   const postUrls = posts.map(post => ({
-    loc: `{{https://edoardodusi.com/blog/${post.url}}}`,
+    loc: `https://edoardodusi.com/blog/${post.url}`,
     lastmod: post.date.toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'never',
@@ -316,7 +318,7 @@ ${allUrls.map(u => `  <url>
 > Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
 
 ## Blog Posts
-${posts.map(p => `- [${p.title}]({{https://edoardodusi.com/blog/${p.url}}}): ${p.excerpt}`).join('\n')}
+${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.excerpt}`).join('\n')}
 
 ## Links
 - [Blog](https://edoardodusi.com/blog/)
@@ -335,7 +337,7 @@ ${posts.map(p => `- [${p.title}]({{https://edoardodusi.com/blog/${p.url}}}): ${p
 
 ${posts.map(p => {
     const dateStr = p.date.toISOString().split('T')[0];
-    return `# ${p.title}\nURL: {{https://edoardodusi.com/blog/${p.url}}}\nDate: ${dateStr}\nReading time: ${p.readingTime} min\n\n${p.body.trim()}`;
+    return `# ${p.title}\nURL: https://edoardodusi.com/blog/${p.url}\nDate: ${dateStr}\nReading time: ${p.readingTime} min\n\n${p.body.trim()}`;
   }).join('\n\n---\n\n')}
 `;
   fs.writeFileSync(path.join(docsDir, 'llms-full.txt'), llmsFullTxt);

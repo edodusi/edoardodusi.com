@@ -6,7 +6,7 @@
 ---
 
 # "Error while dexing": how an Android build failure led me to a dying SSD
-URL: {{https://edoardodusi.com/blog/2026/error-while-dexing.html}}
+URL: https://edoardodusi.com/blog/2026/error-while-dexing.html
 Date: 2026-07-29
 Reading time: 8 min
 
@@ -158,7 +158,7 @@ If I had kept using that NVMe as my primary disk, my data would have been lost i
 ---
 
 # Welcome to my new website and blog!
-URL: {{https://edoardodusi.com/blog/2026/welcome.html}}
+URL: https://edoardodusi.com/blog/2026/welcome.html
 Date: 2026-07-24
 Reading time: 2 min
 

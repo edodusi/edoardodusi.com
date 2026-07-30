@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>&quot;Error while dexing&quot;: how an Android build failure led me to a dying SSD — Edoardo Dusi</title>
   <meta name="description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
-  <link rel="canonical" href="{{https://edoardodusi.com/blog/2026/error-while-dexing.html}}" />
+  <link rel="canonical" href="https://edoardodusi.com/blog/2026/error-while-dexing.html" />
   <meta name="view-transition" content="same-origin" />
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="&quot;Error while dexing&quot;: how an Android build failure led me to a dying SSD" />
   <meta property="og:description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
-  <meta property="og:image" content="{{https://edoardodusi.com/blog/2026}}/error-while-dexing-og.png" />
+  <meta property="og:image" content="https://edoardodusi.com/blog/2026/error-while-dexing-og.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#121314" media="(prefers-color-scheme: dark)" />
@@ -24,7 +24,7 @@
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": "\"Error while dexing\": how an Android build failure led me to a dying SSD",
-    "image": "{{https://edoardodusi.com/blog/2026}}/error-while-dexing-og.png",
+    "image": "https://edoardodusi.com/blog/2026/error-while-dexing-og.png",
     "datePublished": "2026-07-29T00:00:00.000Z",
     "description": "An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery.",
     "author": {
@@ -41,13 +41,21 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="/main.css?v2" />
+  <link rel="stylesheet" href="/main.css?v3" />
   <link rel="stylesheet" href="/syntax.css" />
   
   <style>
     /* Minimal Markdown styling */
-    .blog-content h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
-    .blog-content h3 { font-size: 1.25rem; margin: 2rem 0 1rem; }
+    /* Section headings echo the article title's serif face. */
+    .blog-content h2, .blog-content h3, .blog-content h4 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .blog-content h2 { font-size: 2.5rem; margin: 3.25rem 0 1.1rem; }
+    .blog-content h3 { font-size: 1.6rem; margin: 2.5rem 0 0.85rem; }
+    .blog-content h4 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }
     .blog-content p { margin-bottom: 1.5rem; }
     .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
     .blog-content a:hover { text-decoration-color: var(--accent); }
@@ -62,6 +70,38 @@
     .blog-content li { margin-bottom: 0.5rem; }
     .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
     .blog-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem 0; }
+
+    /* Tables: horizontal rules only, generous breathing room, scrollable on narrow screens. */
+    .blog-content .table-wrap { margin: 3rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .blog-content table {
+      width: 100%;
+      min-width: 26rem;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+    .blog-content thead th {
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      padding: 0 1rem 0.7rem 0;
+      border-bottom: 1px solid var(--fg);
+      white-space: nowrap;
+    }
+    .blog-content tbody td {
+      padding: 0.85rem 1rem 0.85rem 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-variant-numeric: tabular-nums;
+    }
+    .blog-content tbody tr:last-child td { border-bottom: none; }
+    .blog-content tbody tr:hover td { background: var(--accent-soft); }
+    .blog-content th:last-child, .blog-content td:last-child { padding-right: 0; }
+    .blog-content tbody td:first-child { color: var(--fg); font-weight: 500; }
+    .blog-content table code { font-size: 0.85em; }
     #progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 1000; }
     #progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.1s; }
     
@@ -145,7 +185,7 @@ BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
 <p>The drive was a Fanxiang S770 2TB with 943 power-on hours and 4.8 TB written. Its headline looked reassuring:</p>
 <pre><code class="hljs language-bash">SMART overall-health self-assessment <span class="hljs-built_in">test</span> result: PASSED
 </code></pre><p>But that was a lie. The useful information was a few lines below:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Metric</th>
@@ -173,7 +213,7 @@ BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
 <td><strong>27,466</strong></td>
 <td>Repeated attempts against failing reads</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>NVMe&#39;s overall-health result only fails when a Critical Warning bit is set, and mine was still <code>0x00</code>. The spare-capacity warning would not fire until Available Spare fell below its threshold, 25% on this drive.</p>
 <p>So the headline said <code>PASSED</code> while the counters described a nearly new SSD with 50 unrecoverable errors and 11% of its spare pool already gone. Zero wear made ordinary ageing a poor explanation. This looked like an early-life manufacturing defect.</p>
 <h2>Turning the failure into a rescue</h2>
@@ -196,7 +236,7 @@ tar -tf archive.tar.zst --use-compress-program=<span class="hljs-string">&#x27;z
 <p>The decisive clue was not another counter but a timestamp. One damaged Firefox cache entry had been written on 2025-09-30, ten months before it became unreadable. The write had apparently succeeded, so the data degraded in place.</p>
 <p>SSD bad-block handling is good at catching cells that fail during a write. It is much less helpful when cells accept data and lose their charge later. That explained why Gradle had downloaded valid jars that became unreadable weeks afterwards.</p>
 <p>Successive Btrfs scrubs showed another important pattern:</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Scrub</th>
@@ -227,7 +267,7 @@ tar -tf archive.tar.zst --use-compress-program=<span class="hljs-string">&#x27;z
 <td>10</td>
 <td>1</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p>Each run named different files. Some files that failed once could be read on the next attempt. So it was clear that these were not simply hard-dead sectors that failed consistently, but marginal cells <em>failing probabilistically</em>.</p>
 <p>If that sounds bad, it’s actually worse. A permanently dead sector is at least honest, a scrub finds it every time. A marginal cell can pass today&#39;s scan and fail next week, turning repeated scrubs into whack-a-mole.</p>
 <p>Luckily, every damaged file we found belonged to Steam or Proton, a browser cache or an Android emulator image. Nothing irreplaceable was lost.</p>
