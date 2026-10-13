@@ -13,7 +13,7 @@ Mine looked like a Gradle bug. Claude Code saw through the disguise almost immed
 
 The release build of CodeRoutine failed every time on the same dependency:
 
-```bash
+```text
 Execution failed for DexingNoClasspathTransform: .../tink-android-1.8.0.jar
   > Error while dexing.
 ```
@@ -24,13 +24,13 @@ We checked the obvious explanations first. A corrupted Gradle cache was plausibl
 
 Then we looked one layer lower. A debug build had produced a less friendly but much more useful message:
 
-```bash
+```text
 AsmClassesTransform … > Input/output error
 ```
 
 And underneath Gradle's summary, `--stacktrace` exposed the exception that mattered:
 
-```bash
+```text
 java.io.IOException
 ```
 
@@ -46,7 +46,7 @@ It returned an I/O error. After a couple of “Discombobulating…”, Claude Co
 
 That conclusion surprised me, so I asked for details and evidence. The kernel log provided both:
 
-```bash
+```text
 nvme1n1: I/O Cmd(0x2) @ LBA 311368392, 256 blocks, I/O Error (sct 0x2 / sc 0x81)
 critical medium error, dev nvme1n1, sector 311368392 op 0x0:(READ)
 BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
@@ -62,7 +62,7 @@ The Android problem was solved, but the problem with my computer had just starte
 
 The drive was a Fanxiang S770 2TB with 943 power-on hours and 4.8 TB written. Its headline looked reassuring:
 
-```bash
+```text
 SMART overall-health self-assessment test result: PASSED
 ```
 

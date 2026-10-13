@@ -3,16 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>“Error while dexing”: how an Android build failure led me to a dying SSD — Edoardo Dusi</title>
+  <title>“Error while dexing”: how an Android build failure led me to a dying SSD - Edoardo Dusi</title>
   <meta name="description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
   <link rel="canonical" href="https://edoardodusi.com/blog/2026/error-while-dexing.html" />
   <meta name="view-transition" content="same-origin" />
   
   <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Edoardo Dusi" />
+  <meta property="og:url" content="https://edoardodusi.com/blog/2026/error-while-dexing.html" />
   <meta property="og:title" content="“Error while dexing”: how an Android build failure led me to a dying SSD" />
   <meta property="og:description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
   <meta property="og:image" content="https://edoardodusi.com/blog/2026/error-while-dexing-og.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="“Error while dexing”: how an Android build failure led me to a dying SSD" />
+  <meta property="article:published_time" content="2026-07-30T00:00:00.000Z" />
+  <meta property="article:modified_time" content="2026-07-30T00:00:00.000Z" />
+  <meta property="article:author" content="https://edoardodusi.com/" />
+  <meta name="author" content="Edoardo Dusi" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="“Error while dexing”: how an Android build failure led me to a dying SSD" />
+  <meta name="twitter:description" content="An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery." />
+  <meta name="twitter:image" content="https://edoardodusi.com/blog/2026/error-while-dexing-og.png" />
   <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
 
@@ -28,10 +41,15 @@
     "headline": "“Error while dexing”: how an Android build failure led me to a dying SSD",
     "image": "https://edoardodusi.com/blog/2026/error-while-dexing-og.png",
     "datePublished": "2026-07-30T00:00:00.000Z",
+    "dateModified": "2026-07-30T00:00:00.000Z",
     "description": "An Android build kept failing on the same jar. Claude Code quickly traced the I/O errors to a failing NVMe SSD, then helped me verify the diagnosis and design a careful one-pass recovery.",
+    "inLanguage": "en",
+    "url": "https://edoardodusi.com/blog/2026/error-while-dexing.html",
+    "mainEntityOfPage": "https://edoardodusi.com/blog/2026/error-while-dexing.html",
     "author": {
       "@type": "Person",
       "name": "Edoardo Dusi",
+      "jobTitle": "Senior Developer Advocate",
       "url": "https://edoardodusi.com"
     }
   }
@@ -43,7 +61,7 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="/main.css?v19" />
+  <link rel="stylesheet" href="/main.css?v21" />
   <link rel="stylesheet" href="/syntax.css" />
   
   <style>
@@ -98,11 +116,19 @@
     .blog-content a:hover { text-decoration-color: var(--accent); }
     .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
-    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0; }
-    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus { opacity: 1; }
+    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0.55; z-index: 2; }
+    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus-visible { opacity: 1; }
     .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
     .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
-    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; }
+    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+    /* Wide lines scroll; a fade on the right edge says so. main.js toggles the
+       classes, and the fade goes once the reader reaches the end. */
+    .blog-content pre.is-scrollable::after {
+      content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 3rem;
+      background: linear-gradient(90deg, rgba(40, 41, 54, 0), #282936);
+      pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .blog-content pre.is-scrollable.at-end::after { opacity: 0; }
     .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
     .blog-content li { margin-bottom: 0.5rem; }
     .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
@@ -151,9 +177,56 @@
     }
     .blog-content pre code { padding-top: 2.2rem; }
     
-    .article-tags { margin-top: 0.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .article-tags .tag { font-size: 0.85rem; color: var(--faint); text-transform: lowercase; }
-    .article-tags .tag::before { content: '#'; color: var(--accent); opacity: 0.6; margin-right: 2px; }
+    /* Tags are labels, not links (there are no tag pages), so they read as
+       quiet chips rather than hashtags that promise a click. */
+    .article-tags { list-style: none; margin-top: 1rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .article-tags .tag { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding: 0.15rem 0.5rem; border: 1px solid var(--line); }
+
+    /* Post titles are sentences: sentence case and a smaller step than the
+       uppercase page heroes, so a long title stays readable. */
+    .hero h1.post-title {
+      text-transform: none;
+      font-size: clamp(2.3rem, 6vw, 3.6rem);
+      line-height: 1.04;
+      letter-spacing: 0.002em;
+    }
+    .post-meta { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    .back-link { text-decoration: none; color: inherit; }
+    .back-link:hover { color: var(--accent); }
+
+    .post-cover { margin: -1rem 0 2.5rem; }
+    .post-cover img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+    /* --- End of post: author card and neighbours ----------------------- */
+    .author-card {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      margin: 1rem 0 2rem; padding: 1.4rem;
+      border: 1px solid var(--line); border-left: 4px solid var(--marker);
+      background: var(--card);
+    }
+    .author-card img { flex: none; width: 4.5rem; height: 4.5rem; display: block; }
+    .author-name { font-weight: 600; }
+    .author-name a { text-decoration: none; }
+    .author-card .p-note { color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+    .author-links { margin-top: 0.6rem; font-size: 0.88rem; }
+    .author-links a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .author-links a:hover { text-decoration: underline; }
+
+    .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
+    .post-nav-link {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding: 1rem 1.2rem; border: 1px solid var(--line);
+      text-decoration: none; transition: border-color 0.15s ease;
+    }
+    .post-nav-link:hover, .post-nav-link:focus-visible { border-color: var(--accent); color: inherit; }
+    .post-nav-link .card-title { font-weight: 600; line-height: 1.35; }
+    .post-nav-link.newer { text-align: right; grid-column: 2; }
+
+    @media (max-width: 640px) {
+      .author-card { flex-direction: column; }
+      .post-nav { grid-template-columns: 1fr; }
+      .post-nav-link.newer { grid-column: 1; text-align: left; }
+    }
   </style>
 </head>
 <body>
@@ -169,6 +242,7 @@
         <a href="/#writing">Writing</a>
         <a href="/#guests">Guest</a>
         <a href="/#projects">Side</a>
+        <a class="nav-cta" href="/speaker/">Invite me to speak</a>
       </div>
       <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -191,31 +265,33 @@
   <main id="top">
     <article class="h-entry">
       <header class="hero reveal">
-        <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
-        <h1 class="p-name">“Error while dexing”: how an Android build failure led me to a dying SSD</h1>
-        <p class="tagline"><time class="dt-published" datetime="2026-07-30T00:00:00.000Z">July 30, 2026</time> &middot; 8 min read</p>
-        <div class="article-tags"><span class="tag">Storage</span><span class="tag">AI</span><span class="tag">Linux</span><span class="tag">Hardware</span></div>
+        <p class="kicker"><a class="back-link" href="/blog/">&larr; Back to blog</a></p>
+        <h1 class="p-name post-title">“Error while dexing”: how an Android build failure led me to a dying SSD</h1>
+        <p class="post-meta"><time class="dt-published" datetime="2026-07-30T00:00:00.000Z">July 30, 2026</time> &middot; 8 min read</p>
+        <ul class="article-tags" aria-label="Tags"><li class="tag">Storage</li><li class="tag">AI</li><li class="tag">Linux</li><li class="tag">Hardware</li></ul>
       </header>
+
+      
 
       <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
         <p>A dying disk doesn&#39;t announce itself like Roy Batty, with tears in rain. It sneaks in wearing a mask: the face of the first thing that happens to touch a bad sector.</p>
 <p>Mine looked like a Gradle bug. Claude Code saw through the disguise almost immediately. I didn&#39;t believe it at first, so I made it walk me through the evidence.</p>
 <h2>From a dexing error to an I/O error</h2>
 <p>The release build of CodeRoutine failed every time on the same dependency:</p>
-<pre><code class="hljs language-bash">Execution failed <span class="hljs-keyword">for</span> DexingNoClasspathTransform: .../tink-android-1.8.0.jar
-  &gt; Error <span class="hljs-keyword">while</span> dexing.
+<pre><code class="hljs language-text">Execution failed for DexingNoClasspathTransform: .../tink-android-1.8.0.jar
+  &gt; Error while dexing.
 </code></pre><p>If you&#39;ve worked on Android, that points you toward software: a dependency conflict, a D8/R8 mismatch, a stale cache or some incompatibility between the library and the toolchain.</p>
 <p>We checked the obvious explanations first. A corrupted Gradle cache was plausible, but rebuilding it did not solve the failure. Memory pressure from orphaned Gradle daemons was plausible too, and wrong too.</p>
 <p>Then we looked one layer lower. A debug build had produced a less friendly but much more useful message:</p>
-<pre><code class="hljs language-bash">AsmClassesTransform … &gt; Input/output error
+<pre><code class="hljs language-text">AsmClassesTransform … &gt; Input/output error
 </code></pre><p>And underneath Gradle&#39;s summary, <code>--stacktrace</code> exposed the exception that mattered:</p>
-<pre><code class="hljs language-bash">java.io.IOException
+<pre><code class="hljs language-text">java.io.IOException
 </code></pre><p>The toolchain wasn&#39;t rejecting the jar, it couldn&#39;t read it!</p>
 <p>A single command confirmed that Gradle was not involved:</p>
 <pre><code class="hljs language-bash"><span class="hljs-built_in">cat</span> ~/.gradle/caches/.../tink-android-1.8.0.jar &gt; /dev/null
 </code></pre><p>It returned an I/O error. After a couple of “Discombobulating…”, Claude Code was blunt: this was not a corrupted jar, this was a clear indicator of a failing drive.</p>
 <p>That conclusion surprised me, so I asked for details and evidence. The kernel log provided both:</p>
-<pre><code class="hljs language-bash">nvme1n1: I/O Cmd(0x2) @ LBA 311368392, 256 blocks, I/O Error (sct 0x2 / sc 0x81)
+<pre><code class="hljs language-text">nvme1n1: I/O Cmd(0x2) @ LBA 311368392, 256 blocks, I/O Error (sct 0x2 / sc 0x81)
 critical medium error, dev nvme1n1, sector 311368392 op 0x0:(READ)
 BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
 </code></pre><p><code>sct 0x2 / sc 0x81</code> is an unrecovered read error: the drive itself could not return the data.</p>
@@ -223,7 +299,7 @@ BTRFS error (device nvme1n1p3): errs: wr 0, rd 5266, flush 0, corrupt 0, gen 0
 <p>The Android problem was solved, but the problem with my computer had just started.</p>
 <h2>SMART said PASSED</h2>
 <p>The drive was a Fanxiang S770 2TB with 943 power-on hours and 4.8 TB written. Its headline looked reassuring:</p>
-<pre><code class="hljs language-bash">SMART overall-health self-assessment <span class="hljs-built_in">test</span> result: PASSED
+<pre><code class="hljs language-text">SMART overall-health self-assessment test result: PASSED
 </code></pre><p>But that was a lie. The useful information was a few lines below:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -322,16 +398,31 @@ tar -tf archive.tar.zst --use-compress-program=<span class="hljs-string">&#x27;z
 <p>If I had kept using that NVMe as my primary disk, my data would have been lost in time, like tears in rain.</p>
 
       </div>
+
+      <aside class="author-card p-author h-card" aria-label="About the author">
+        <img class="u-photo" src="/img/edo-avatar-192.jpg" alt="" width="72" height="72" loading="lazy" decoding="async" />
+        <div>
+          <p class="author-name"><a class="p-name u-url" href="/">Edoardo Dusi</a></p>
+          <p class="p-note">Senior Developer Advocate at AWS. I write about the web, cloud, AI and the developer ecosystem, and speak at conferences across Europe.</p>
+          <p class="author-links"><a href="/blog/rss.xml">Subscribe via RSS</a> &middot; <a href="/speaker/">Invite me to speak</a> &middot; <a href="https://www.linkedin.com/in/edoardodusi/" rel="me noopener">LinkedIn</a></p>
+        </div>
+      </aside>
+
+      <nav class="post-nav" aria-label="More posts"><a class="post-nav-link older" href="/blog/2026/welcome.html"><span class="card-label">&larr; Older</span><span class="card-title">Welcome to my new website and blog!</span></a><span></span></nav>
     </article>
   </main>
 
   <footer class="site-foot">
     <div class="foot-row">
       <p>&copy; <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
-      <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+      <div class="foot-links">
+        <a href="/speaker/">Speaker kit</a>
+        <a href="/blog/rss.xml">RSS</a>
+        <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+      </div>
     </div>
   </footer>
 
-  <script src="/main.js?v5" defer></script>
+  <script src="/main.js?v7" defer></script>
 </body>
 </html>

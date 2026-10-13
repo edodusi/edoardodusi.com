@@ -80,14 +80,113 @@
   }
 
   // --- Contact email (obfuscated) -------------------------------------------
-  var contact = document.getElementById('contact-link');
-  if (contact) {
-    var u = contact.dataset.u;
-    var d = contact.dataset.d;
-    var addr = u + '@' + d;
-    contact.href = 'ma' + 'il' + 'to:' + addr;
-    contact.textContent = addr;
+  // Any [data-u][data-d] link gets its mailto assembled here, so the address
+  // never sits in the HTML. data-subject pre-fills the subject; the footer
+  // link (#contact-link) also shows the address as its text.
+  document.querySelectorAll('a[data-u][data-d]').forEach(function (link) {
+    var addr = link.dataset.u + '@' + link.dataset.d;
+    var subject = link.dataset.subject ? '?subject=' + encodeURIComponent(link.dataset.subject) : '';
+    link.href = 'ma' + 'il' + 'to:' + addr + subject;
+    if (link.id === 'contact-link') link.textContent = addr;
+  });
+
+  // --- Collapsible lists ----------------------------------------------------
+  // [data-collapse="N"] shows the first N rows and reveals N more per click.
+  // Year headings (and their lists) hide while every row under them is hidden.
+  // Without JS nothing is hidden. Focus moves to the first revealed row so
+  // keyboard and screen-reader users land on the new content.
+  document.querySelectorAll('[data-collapse]').forEach(function (box) {
+    var step = parseInt(box.dataset.collapse, 10) || 8;
+    var rows = Array.prototype.slice.call(box.querySelectorAll('li.row'));
+    if (rows.length <= step) return;
+
+    var label = box.dataset.label || 'items';
+    var shown = step;
+    var wrap = document.createElement('div');
+    wrap.className = 'list-more';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-ghost btn-sm';
+    if (box.id) btn.setAttribute('aria-controls', box.id);
+    wrap.appendChild(btn);
+    box.parentNode.insertBefore(wrap, box.nextSibling);
+
+    function render() {
+      rows.forEach(function (row, i) { row.hidden = i >= shown; });
+      box.querySelectorAll('ol, ul').forEach(function (list) {
+        var visible = list.querySelector('li.row:not([hidden])');
+        list.hidden = !visible;
+        var heading = list.previousElementSibling;
+        if (heading && heading.classList.contains('year')) heading.hidden = !visible;
+      });
+      var left = rows.length - shown;
+      if (left > 0) {
+        btn.textContent = '+ Show ' + Math.min(step, left) + ' more ' + label + ' (' + left + ' left)';
+        btn.setAttribute('aria-expanded', 'false');
+      } else {
+        btn.textContent = '- Show fewer ' + label;
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    btn.addEventListener('click', function () {
+      if (shown >= rows.length) {
+        shown = step;
+        render();
+        box.closest('section').scrollIntoView({ block: 'start' });
+        return;
+      }
+      var first = rows[shown];
+      shown = Math.min(shown + step, rows.length);
+      render();
+      first.setAttribute('tabindex', '-1');
+      first.focus({ preventScroll: false });
+    });
+
+    render();
+  });
+
+  // --- Copy-to-clipboard blocks -------------------------------------------
+  // [data-copy="id"] copies the text of #id, paragraphs separated by a blank
+  // line, so a bio pastes cleanly into a CFP form or a programme.
+  function copyText(text, done) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { legacyCopy(text, done); });
+    } else {
+      legacyCopy(text, done);
+    }
   }
+
+  function legacyCopy(text, done) {
+    var area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.left = '-999999px';
+    document.body.appendChild(area);
+    area.select();
+    try { document.execCommand('copy'); done(); } catch (err) { console.error('Copy failed', err); }
+    document.body.removeChild(area);
+  }
+
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    var source = document.getElementById(btn.dataset.copy);
+    if (!source) return;
+    var original = btn.textContent;
+    btn.addEventListener('click', function () {
+      var paras = source.querySelectorAll('p');
+      var text = paras.length
+        ? Array.prototype.map.call(paras, function (p) { return p.textContent.replace(/\s+/g, ' ').trim(); }).join('\n\n')
+        : source.textContent.replace(/\s+/g, ' ').trim();
+      copyText(text, function () {
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  });
 
   // --- Scroll reveal --------------------------------------------------------
   if ('IntersectionObserver' in window) {
@@ -174,11 +273,30 @@
       var code = pre.querySelector('code');
       if (code && code.className) {
         var match = code.className.match(/language-(\w+)/);
-        if (match) {
+        // Plain output isn't a language; labelling it "TEXT" is just noise.
+        if (match && !/^(text|plaintext|txt|output)$/.test(match[1])) {
           pre.setAttribute('data-language', match[1]);
         }
       }
     });
+
+    // 4. Scroll hint on wide code blocks: a right-edge fade while there's
+    // more to see, gone once the reader scrolls to the end.
+    var codeBlocks = Array.prototype.slice.call(document.querySelectorAll('.blog-content pre'));
+    var syncScrollHint = function (pre) {
+      var code = pre.querySelector('code');
+      if (!code) return;
+      var scrollable = code.scrollWidth > code.clientWidth + 1;
+      pre.classList.toggle('is-scrollable', scrollable);
+      pre.classList.toggle('at-end', scrollable && code.scrollLeft + code.clientWidth >= code.scrollWidth - 1);
+    };
+    codeBlocks.forEach(function (pre) {
+      var code = pre.querySelector('code');
+      if (!code) return;
+      code.addEventListener('scroll', function () { syncScrollHint(pre); }, { passive: true });
+      syncScrollHint(pre);
+    });
+    window.addEventListener('resize', function () { codeBlocks.forEach(syncScrollHint); });
   }
 
   // --- Hero parallax ----------------------------------------------------

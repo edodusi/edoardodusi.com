@@ -1,18 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{lang}}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{title}} — Edoardo Dusi</title>
+  <title>{{title}} - Edoardo Dusi</title>
   <meta name="description" content="{{excerpt}}" />
   <link rel="canonical" href="{{url}}" />
   <meta name="view-transition" content="same-origin" />
   
   <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Edoardo Dusi" />
+  <meta property="og:url" content="{{url}}" />
   <meta property="og:title" content="{{title}}" />
   <meta property="og:description" content="{{excerpt}}" />
   <meta property="og:image" content="{{og_image}}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="{{title}}" />
+  <meta property="article:published_time" content="{{iso_date}}" />
+  <meta property="article:modified_time" content="{{iso_updated}}" />
+  <meta property="article:author" content="https://edoardodusi.com/" />
+  <meta name="author" content="Edoardo Dusi" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{{title}}" />
+  <meta name="twitter:description" content="{{excerpt}}" />
+  <meta name="twitter:image" content="{{og_image}}" />
   <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
 
@@ -28,10 +41,15 @@
     "headline": "{{title}}",
     "image": "{{og_image}}",
     "datePublished": "{{iso_date}}",
+    "dateModified": "{{iso_updated}}",
     "description": "{{excerpt}}",
+    "inLanguage": "{{lang}}",
+    "url": "{{url}}",
+    "mainEntityOfPage": "{{url}}",
     "author": {
       "@type": "Person",
       "name": "Edoardo Dusi",
+      "jobTitle": "Senior Developer Advocate",
       "url": "https://edoardodusi.com"
     }
   }
@@ -43,7 +61,7 @@
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     })();
   </script>
-  <link rel="stylesheet" href="/main.css?v19" />
+  <link rel="stylesheet" href="/main.css?v21" />
   <link rel="stylesheet" href="/syntax.css" />
   
   <style>
@@ -98,11 +116,19 @@
     .blog-content a:hover { text-decoration-color: var(--accent); }
     .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
-    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0; }
-    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus { opacity: 1; }
+    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0.55; z-index: 2; }
+    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus-visible { opacity: 1; }
     .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
     .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
-    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; }
+    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+    /* Wide lines scroll; a fade on the right edge says so. main.js toggles the
+       classes, and the fade goes once the reader reaches the end. */
+    .blog-content pre.is-scrollable::after {
+      content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 3rem;
+      background: linear-gradient(90deg, rgba(40, 41, 54, 0), #282936);
+      pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .blog-content pre.is-scrollable.at-end::after { opacity: 0; }
     .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
     .blog-content li { margin-bottom: 0.5rem; }
     .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
@@ -151,9 +177,56 @@
     }
     .blog-content pre code { padding-top: 2.2rem; }
     
-    .article-tags { margin-top: 0.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .article-tags .tag { font-size: 0.85rem; color: var(--faint); text-transform: lowercase; }
-    .article-tags .tag::before { content: '#'; color: var(--accent); opacity: 0.6; margin-right: 2px; }
+    /* Tags are labels, not links (there are no tag pages), so they read as
+       quiet chips rather than hashtags that promise a click. */
+    .article-tags { list-style: none; margin-top: 1rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .article-tags .tag { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding: 0.15rem 0.5rem; border: 1px solid var(--line); }
+
+    /* Post titles are sentences: sentence case and a smaller step than the
+       uppercase page heroes, so a long title stays readable. */
+    .hero h1.post-title {
+      text-transform: none;
+      font-size: clamp(2.3rem, 6vw, 3.6rem);
+      line-height: 1.04;
+      letter-spacing: 0.002em;
+    }
+    .post-meta { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    .back-link { text-decoration: none; color: inherit; }
+    .back-link:hover { color: var(--accent); }
+
+    .post-cover { margin: -1rem 0 2.5rem; }
+    .post-cover img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+    /* --- End of post: author card and neighbours ----------------------- */
+    .author-card {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      margin: 1rem 0 2rem; padding: 1.4rem;
+      border: 1px solid var(--line); border-left: 4px solid var(--marker);
+      background: var(--card);
+    }
+    .author-card img { flex: none; width: 4.5rem; height: 4.5rem; display: block; }
+    .author-name { font-weight: 600; }
+    .author-name a { text-decoration: none; }
+    .author-card .p-note { color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+    .author-links { margin-top: 0.6rem; font-size: 0.88rem; }
+    .author-links a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .author-links a:hover { text-decoration: underline; }
+
+    .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
+    .post-nav-link {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding: 1rem 1.2rem; border: 1px solid var(--line);
+      text-decoration: none; transition: border-color 0.15s ease;
+    }
+    .post-nav-link:hover, .post-nav-link:focus-visible { border-color: var(--accent); color: inherit; }
+    .post-nav-link .card-title { font-weight: 600; line-height: 1.35; }
+    .post-nav-link.newer { text-align: right; grid-column: 2; }
+
+    @media (max-width: 640px) {
+      .author-card { flex-direction: column; }
+      .post-nav { grid-template-columns: 1fr; }
+      .post-nav-link.newer { grid-column: 1; text-align: left; }
+    }
   </style>
 </head>
 <body>
@@ -169,6 +242,7 @@
         <a href="/#writing">Writing</a>
         <a href="/#guests">Guest</a>
         <a href="/#projects">Side</a>
+        <a class="nav-cta" href="/speaker/">Invite me to speak</a>
       </div>
       <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -191,25 +265,42 @@
   <main id="top">
     <article class="h-entry">
       <header class="hero reveal">
-        <p class="kicker"><a href="/blog/" style="text-decoration: none; color: inherit;">← Back to Blog</a></p>
-        <h1 class="p-name">{{title}}</h1>
-        <p class="tagline"><time class="dt-published" datetime="{{iso_date}}">{{date}}</time> &middot; {{reading_time}}</p>
+        <p class="kicker"><a class="back-link" href="/blog/">&larr; Back to blog</a></p>
+        <h1 class="p-name post-title">{{title}}</h1>
+        <p class="post-meta"><time class="dt-published" datetime="{{iso_date}}">{{date}}</time> &middot; {{reading_time}}{{updated}}</p>
         {{tags}}
       </header>
+
+      {{cover}}
 
       <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
         {{content}}
       </div>
+
+      <aside class="author-card p-author h-card" aria-label="About the author">
+        <img class="u-photo" src="/img/edo-avatar-192.jpg" alt="" width="72" height="72" loading="lazy" decoding="async" />
+        <div>
+          <p class="author-name"><a class="p-name u-url" href="/">Edoardo Dusi</a></p>
+          <p class="p-note">Senior Developer Advocate at AWS. I write about the web, cloud, AI and the developer ecosystem, and speak at conferences across Europe.</p>
+          <p class="author-links"><a href="/blog/rss.xml">Subscribe via RSS</a> &middot; <a href="/speaker/">Invite me to speak</a> &middot; <a href="https://www.linkedin.com/in/edoardodusi/" rel="me noopener">LinkedIn</a></p>
+        </div>
+      </aside>
+
+      {{post_nav}}
     </article>
   </main>
 
   <footer class="site-foot">
     <div class="foot-row">
       <p>&copy; <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
-      <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+      <div class="foot-links">
+        <a href="/speaker/">Speaker kit</a>
+        <a href="/blog/rss.xml">RSS</a>
+        <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+      </div>
     </div>
   </footer>
 
-  <script src="/main.js?v5" defer></script>
+  <script src="/main.js?v7" defer></script>
 </body>
 </html>

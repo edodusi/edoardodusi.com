@@ -78,6 +78,68 @@ async function build() {
   const monoPath = path.join(__dirname, 'roboto-mono.woff');
   const monoBuffer = await downloadFont('https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono/files/roboto-mono-latin-400-normal.woff', monoPath);
 
+  // Anton, the logo face, for OG titles. Satori can't read woff2, so this is
+  // the woff build of the same font the site self-hosts.
+  const antonPath = path.join(__dirname, 'anton.woff');
+  const antonBuffer = await downloadFont('https://cdn.jsdelivr.net/npm/@fontsource/anton/files/anton-latin-400-normal.woff', antonPath);
+
+  const avatarBase64 = fs.readFileSync(path.join(__dirname, 'docs/img/edo-avatar-og.jpg')).toString('base64');
+
+  // --- OG card renderer ------------------------------------------------------
+  // Brand card: navy ground, the title in Anton, the illustrated avatar on a
+  // yellow offset block (the homepage hero's composition), a yellow rule at
+  // the foot. The title steps down in size as it gets longer so it always
+  // fits in four lines. Used for every post and for the static pages.
+  async function renderOgCard({ topline, title, meta }) {
+    const titleSize = title.length <= 36 ? 92 : title.length <= 60 ? 78 : title.length <= 90 ? 64 : 54;
+    const markupString = `
+      <div style="display: flex; width: 1200px; height: 630px; background-color: #0a1543; font-family: 'Inter'; position: relative;">
+        <div style="display: flex; flex-direction: column; width: 820px; height: 616px; padding: 60px 0 52px 72px;">
+          <div style="display: flex; font-family: 'Roboto Mono'; font-size: 26px; color: #ffd500;">${escapeHtml(topline)}</div>
+          <div style="display: flex; flex-grow: 1; align-items: center;">
+            <div style="display: flex; font-family: 'Anton'; font-size: ${titleSize}px; line-height: 1.08; color: #ffffff;">${escapeHtml(title)}</div>
+          </div>
+          <div style="display: flex; font-family: 'Roboto Mono'; font-size: 24px; color: #aab3d6;">${escapeHtml(meta)}</div>
+        </div>
+        <div style="display: flex; position: absolute; left: 870px; top: 96px; width: 270px; height: 270px; background-color: #ffd500;"></div>
+        <img src="data:image/jpeg;base64,${avatarBase64}" style="position: absolute; left: 854px; top: 80px; width: 270px; height: 270px; border: 6px solid #0a1543;" />
+        <div style="display: flex; flex-direction: column; position: absolute; left: 854px; top: 398px; width: 290px;">
+          <div style="display: flex; font-size: 30px; color: #ffffff;">Edoardo Dusi</div>
+          <div style="display: flex; font-family: 'Roboto Mono'; font-size: 19px; color: #aab3d6; margin-top: 6px;">Senior Developer Advocate</div>
+        </div>
+        <div style="display: flex; position: absolute; left: 0; bottom: 0; width: 1200px; height: 14px; background-color: #ffd500;"></div>
+      </div>
+    `;
+
+    const svg = await satori(html([markupString]), {
+      width: 1200,
+      height: 630,
+      fonts: [
+        { name: 'Inter', data: fontBuffer, weight: 700, style: 'normal' },
+        { name: 'Roboto Mono', data: monoBuffer, weight: 400, style: 'normal' },
+        { name: 'Anton', data: antonBuffer, weight: 400, style: 'normal' },
+      ],
+    });
+
+    return new Resvg(svg, { font: { loadSystemFonts: false } }).render().asPng();
+  }
+
+  // Static pages get the same card. Their copy lives here, next to the post
+  // cards, so a headline change on a page means a one-line edit below.
+  const staticCards = [
+    { file: 'docs/og.png', topline: 'edoardodusi.com', title: 'Turning hard tech into talks developers remember', meta: 'Talks  ·  Writing  ·  Podcast' },
+    { file: 'docs/blog/og.png', topline: 'edoardodusi.com/blog', title: 'Unfiltered thoughts on the web, cloud, AI and code', meta: 'Blog  ·  RSS' },
+    { file: 'docs/speaker/og.png', topline: 'edoardodusi.com/speaker', title: 'Invite me to speak', meta: 'Keynotes  ·  Talks  ·  Workshops  ·  EN / IT' },
+  ];
+  for (const card of staticCards) {
+    fs.mkdirSync(path.dirname(path.join(__dirname, card.file)), { recursive: true });
+    fs.writeFileSync(path.join(__dirname, card.file), await renderOgCard(card));
+  }
+
+  // Drafts are skipped unless DRAFTS=1, so a post can be pushed before it's
+  // ready and previewed locally with `DRAFTS=1 npm run build`.
+  const includeDrafts = process.env.DRAFTS === '1';
+
   let files = [];
   if (fs.existsSync(contentDir)) {
     files = fs.readdirSync(contentDir).filter(f => f.endsWith('.md'));
@@ -100,112 +162,40 @@ async function build() {
       fs.mkdirSync(yearDir, { recursive: true });
     }
 
+    if (parsed.attributes.draft === true && !includeDrafts) {
+      console.log(`Skipping draft: ${file}`);
+      continue;
+    }
+
     const rawTags = parsed.attributes.tags;
     let tagArray = [];
     if (rawTags) {
       tagArray = Array.isArray(rawTags) ? rawTags : rawTags.split(',').map(t => t.trim());
     }
-    
-    // For OG Image
-    let ogTags = tagArray.length > 0 ? tagArray : ['Markdown', 'Love'];
-    const totalWeight = ogTags.reduce((acc, _, i) => acc + (ogTags.length - i), 0);
-    let barSegments = '';
-    let labelSegments = '';
-    
-    const colors = {
-      javascript: '#f1e05a', js: '#f1e05a', typescript: '#3178c6', ts: '#3178c6',
-      html: '#e34c26', css: '#563d7c', python: '#3572A5', rust: '#dea584',
-      go: '#00ADD8', ruby: '#701516', shell: '#89e051', bash: '#89e051',
-      markdown: '#3178c6', love: '#e34c26', design: '#ff4785', react: '#61dafb'
-    };
-    const palette = ['#4fd1c5', '#f6ad55', '#fc8181', '#68d391', '#63b3ed', '#b794f4', '#f687b3', '#ecc94b'];
-    
-    ogTags.forEach((tag, i) => {
-      const weight = ogTags.length - i;
-      const pct = Math.round((weight / totalWeight) * 100);
-      const t = tag.toLowerCase();
-      let color = colors[t];
-      if (!color) {
-        let hash = 0;
-        for (let j = 0; j < t.length; j++) hash = t.charCodeAt(j) + ((hash << 5) - hash);
-        color = palette[Math.abs(hash) % palette.length];
-      }
-      barSegments += `<div style="display: flex; background-color: ${color}; height: 100%; width: ${pct}%;"></div>`;
-      labelSegments += `
-        <div style="display: flex; align-items: center; margin-right: 32px;">
-          <div style="display: flex; width: 14px; height: 14px; border-radius: 50%; background-color: ${color}; margin-right: 12px;"></div>
-          ${tag} ${pct}%
-        </div>
-      `;
-    });
 
-    const dateString = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const avatarBase64 = fs.readFileSync(path.join(__dirname, 'docs/avatar.jpg')).toString('base64');
-    const markupString = `
-      <div style="display: flex; flex-direction: column; width: 1200px; height: 630px; background-color: #ffffff; font-family: 'Inter'; padding: 24px;">
-        <div style="display: flex; flex-direction: column; flex-grow: 1; border: 1px solid #2d3139; border-radius: 16px; background-color: #15161b; padding: 48px 56px;">
-          
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px;">
-            <div style="display: flex; align-items: center;">
-              <img src="data:image/jpeg;base64,${avatarBase64}" style="width: 140px; height: 140px; margin-right: 24px; margin-top: -12px;" />
-              <div style="display: flex; font-size: 50px; font-weight: 700; letter-spacing: -0.01em;">
-                <span style="color: #8b949e;">edoardodusi/</span>
-                <span style="color: #c9d1d9;">${slug}</span>
-              </div>
-            </div>
-            <div style="display: flex;">
-              <svg viewBox="0 0 16 16" width="56" height="56" fill="#8b949e">
-                <path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path>
-              </svg>
-            </div>
-          </div>
+    const updated = parsed.attributes.updated ? new Date(parsed.attributes.updated) : null;
+    const lang = parsed.attributes.lang || 'en';
+    const cover = parsed.attributes.cover || '';
+    const coverAlt = typographicQuotes(parsed.attributes.cover_alt || '');
 
-          <div style="display: flex; font-size: 42px; font-family: 'Roboto Mono'; color: #8b949e; line-height: 1.5; margin-bottom: 20px; max-width: 1000px;">
-            ${title}
-          </div>
+    const wordCount = parsed.body.trim().split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+    const longDate = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateString = longDate(date);
 
-          <div style="display: flex; flex-grow: 1;"></div>
+    // --- OG image -------------------------------------------------------------
+    // Date, read time, then as many tags as fit on one line.
+    let ogMeta = [
+      date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      `${readingTime} min read`,
+    ].join('  ·  ');
+    for (const tag of tagArray) {
+      const next = `${ogMeta}  ·  #${tag.toLowerCase()}`;
+      if (next.length > 50) break;
+      ogMeta = next;
+    }
 
-          <div style="display: flex; align-items: center; font-size: 28px; color: #8b949e; margin-bottom: 24px;">
-            <div style="display: flex; align-items: center; margin-right: 48px;">
-              <svg viewBox="0 0 16 16" width="32" height="32" fill="#8b949e" style="margin-right: 12px;"><path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>
-              0 Stars
-            </div>
-            <div style="display: flex; align-items: center; margin-right: 48px;">
-              <svg viewBox="0 0 16 16" width="32" height="32" fill="#8b949e" style="margin-right: 12px;"><path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path></svg>
-              0 Forks
-            </div>
-            <div style="display: flex; align-items: center;">
-              <svg viewBox="0 0 16 16" width="32" height="32" fill="#8b949e" style="margin-right: 12px;"><path fill-rule="evenodd" d="M1.679 7.932c.412-1.067 1.49-2.758 3.023-4.01C6.222 2.684 7.63 2 9 2c1.37 0 2.778.684 4.298 1.922 1.533 1.252 2.611 2.943 3.023 4.01a.75.75 0 010 .536c-.412 1.067-1.49 2.758-3.023 4.01C11.778 13.316 10.37 14 9 14c-1.37 0-2.778-.684-4.298-1.922-1.533-1.252-2.611-2.943-3.023-4.01a.75.75 0 010-.536zM9 3.5c-1.073 0-2.264.555-3.52 1.58C4.243 6.091 3.25 7.439 2.82 8c.43.561 1.423 1.909 2.66 2.92C6.736 11.945 7.927 12.5 9 12.5c1.073 0 2.264-.555 3.52-1.58C13.757 9.909 14.75 8.561 15.18 8c-.43-.561-1.423-1.909-2.66-2.92C11.264 4.055 10.073 3.5 9 3.5zM9 10a2 2 0 100-4 2 2 0 000 4z"></path></svg>
-              1 Reader
-            </div>
-          </div>
-
-          <div style="display: flex; height: 12px; width: 100%; border-radius: 6px; overflow: hidden; margin-bottom: 16px;">
-            ${barSegments}
-          </div>
-          
-          <div style="display: flex; font-size: 26px; color: #8b949e;">
-            ${labelSegments}
-          </div>
-        </div>
-      </div>
-    `;
-
-    const markup = html([markupString]);
-
-    const svg = await satori(markup, {
-      width: 1200,
-      height: 630,
-      fonts: [
-        { name: 'Inter', data: fontBuffer, weight: 700, style: 'normal' },
-        { name: 'Roboto Mono', data: monoBuffer, weight: 400, style: 'normal' }
-      ],
-    });
-
-    const resvg = new Resvg(svg, { font: { loadSystemFonts: false } });
-    const pngData = resvg.render();
-    const pngBuffer = pngData.asPng();
+    const pngBuffer = await renderOgCard({ topline: 'edoardodusi.com/blog', title, meta: ogMeta });
     const ogFileName = `${slug}-og.png`;
     fs.writeFileSync(path.join(yearDir, ogFileName), pngBuffer);
 
@@ -213,15 +203,45 @@ async function build() {
     const htmlContent = marked.parse(parsed.body)
       .replace(/<table>[\s\S]*?<\/table>/g, (t) => `<div class="table-wrap">${t}</div>`);
     const relativeUrl = `${year}/${slug}.html`;
-    const ogImageUrl = `https://edoardodusi.com/blog/${year}/${ogFileName}`;
 
-    const wordCount = parsed.body.trim().split(/\s+/).length;
-    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+    posts.push({
+      title, date, updated, excerpt, lang, cover, coverAlt, tagArray, dateString,
+      htmlContent, readingTime, yearDir, slug,
+      url: relativeUrl,
+      ogImageUrl: `https://edoardodusi.com/blog/${year}/${ogFileName}`,
+      body: parsed.body,
+    });
+  }
+
+  posts.sort((a, b) => b.date - a.date);
+
+  // Pages are rendered after sorting so each post can link its neighbours.
+  posts.forEach((post, i) => {
+    const newer = posts[i - 1];
+    const older = posts[i + 1];
 
     let pageTagsHtml = '';
-    if (tagArray.length > 0) {
-      pageTagsHtml = '<div class="article-tags">' + tagArray.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('') + '</div>';
+    if (post.tagArray.length > 0) {
+      pageTagsHtml = '<ul class="article-tags" aria-label="Tags">' + post.tagArray.map(t => `<li class="tag">${escapeHtml(t)}</li>`).join('') + '</ul>';
     }
+
+    const updatedHtml = post.updated
+      ? ` &middot; Updated <time class="dt-updated" datetime="${post.updated.toISOString()}">${post.updated.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>`
+      : '';
+
+    const coverHtml = post.cover
+      ? `<figure class="post-cover reveal"><img src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.coverAlt)}" decoding="async" /></figure>`
+      : '';
+
+    const navLink = (p, label, cls) => p
+      ? `<a class="post-nav-link ${cls}" href="/blog/${p.url}"><span class="card-label">${label}</span><span class="card-title">${escapeHtml(p.title)}</span></a>`
+      : '<span></span>';
+    const postNavHtml = (newer || older)
+      ? `<nav class="post-nav" aria-label="More posts">${navLink(older, '&larr; Older', 'older')}${navLink(newer, 'Newer &rarr;', 'newer')}</nav>`
+      : '';
+
+    const isoDate = post.date.toISOString();
+    const isoUpdated = (post.updated || post.date).toISOString();
 
     // Title and excerpt appear both in HTML contexts (text nodes, attribute
     // values) and inside the JSON-LD script block. Escape the JSON-LD block
@@ -229,26 +249,30 @@ async function build() {
     const safeTemplate = layoutTemplate.replace(
       /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
       (block) => block
-        .replace(/{{title}}/g, escapeJsonString(title))
-        .replace(/{{excerpt}}/g, escapeJsonString(excerpt))
+        .replace(/{{title}}/g, escapeJsonString(post.title))
+        .replace(/{{excerpt}}/g, escapeJsonString(post.excerpt))
     );
 
-    let postHtml = safeTemplate
-      .replace(/{{title}}/g, escapeHtml(title))
-      .replace(/{{date}}/g, dateString)
-      .replace(/{{iso_date}}/g, date.toISOString())
-      .replace(/{{reading_time}}/g, `${readingTime} min read`)
-      .replace(/{{content}}/g, htmlContent)
-      .replace(/{{excerpt}}/g, escapeHtml(excerpt))
-      .replace(/{{url}}/g, `https://edoardodusi.com/blog/${relativeUrl}`)
-      .replace(/{{og_image}}/g, ogImageUrl)
-      .replace(/{{tags}}/g, pageTagsHtml);
+    const postHtml = safeTemplate
+      .replace(/{{lang}}/g, escapeHtml(post.lang))
+      .replace(/{{title}}/g, escapeHtml(post.title))
+      .replace(/{{date}}/g, post.dateString)
+      .replace(/{{iso_date}}/g, isoDate)
+      .replace(/{{iso_updated}}/g, isoUpdated)
+      .replace(/{{updated}}/g, updatedHtml)
+      .replace(/{{reading_time}}/g, `${post.readingTime} min read`)
+      .replace(/{{cover}}/g, coverHtml)
+      .replace(/{{post_nav}}/g, postNavHtml)
+      .replace(/{{excerpt}}/g, escapeHtml(post.excerpt))
+      .replace(/{{url}}/g, `https://edoardodusi.com/blog/${post.url}`)
+      .replace(/{{og_image}}/g, post.ogImageUrl)
+      .replace(/{{tags}}/g, pageTagsHtml)
+      // Content last: a post that mentions "{{title}}" in a code block must
+      // not have it substituted.
+      .replace(/{{content}}/g, () => post.htmlContent);
 
-    fs.writeFileSync(path.join(yearDir, `${slug}.html`), postHtml);
-    posts.push({ title, date, excerpt, url: relativeUrl, readingTime, body: parsed.body });
-  }
-
-  posts.sort((a, b) => b.date - a.date);
+    fs.writeFileSync(path.join(post.yearDir, `${post.slug}.html`), postHtml);
+  });
 
   let postListHtml = '';
   if (posts.length > 0) {
@@ -302,11 +326,12 @@ async function build() {
   const staticUrls = [
     { loc: 'https://edoardodusi.com/', priority: '1.0', changefreq: 'monthly' },
     { loc: 'https://edoardodusi.com/blog/', priority: '0.9', changefreq: 'weekly' },
+    { loc: 'https://edoardodusi.com/speaker/', priority: '0.8', changefreq: 'monthly' },
   ];
 
   const postUrls = posts.map(post => ({
     loc: `https://edoardodusi.com/blog/${post.url}`,
-    lastmod: post.date.toISOString().split('T')[0],
+    lastmod: (post.updated || post.date).toISOString().split('T')[0],
     priority: '0.8',
     changefreq: 'never',
   }));
@@ -327,12 +352,13 @@ ${allUrls.map(u => `  <url>
   const docsDir = path.dirname(outputDir);
   const llmsTxt = `# Edoardo Dusi
 
-> Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
+> Senior Developer Advocate at AWS, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
 
 ## Blog Posts
 ${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.excerpt}`).join('\n')}
 
 ## Links
+- [Speaker kit](https://edoardodusi.com/speaker/)
 - [Blog](https://edoardodusi.com/blog/)
 - [RSS Feed](https://edoardodusi.com/blog/rss.xml)
 - [Sitemap](https://edoardodusi.com/sitemap.xml)
@@ -340,9 +366,9 @@ ${posts.map(p => `- [${p.title}](https://edoardodusi.com/blog/${p.url}): ${p.exc
   fs.writeFileSync(path.join(docsDir, 'llms.txt'), llmsTxt);
 
   // Generate llms-full.txt (full content for AI)
-  const llmsFullTxt = `# Edoardo Dusi — Full Blog Content
+  const llmsFullTxt = `# Edoardo Dusi - Full Blog Content
 
-> Developer Relations engineer, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
+> Senior Developer Advocate at AWS, speaker, and blogger writing about the web, cloud, AI, coding and the developer ecosystem.
 > Website: https://edoardodusi.com
 
 ---
