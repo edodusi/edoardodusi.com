@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Is stateless MCP just REST? I ran 180 tests to find out - Edoardo Dusi</title>
+  <meta name="description" content="The July 2026 MCP spec dropped sessions, and the internet decided the argument was over. I exposed one backend as both a stateless MCP server and a plain REST API, gave both to the same agent, and recorded what actually changed." />
+  <link rel="canonical" href="https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html" />
+  <meta name="view-transition" content="same-origin" />
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Edoardo Dusi" />
+  <meta property="og:url" content="https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html" />
+  <meta property="og:title" content="Is stateless MCP just REST? I ran 180 tests to find out" />
+  <meta property="og:description" content="The July 2026 MCP spec dropped sessions, and the internet decided the argument was over. I exposed one backend as both a stateless MCP server and a plain REST API, gave both to the same agent, and recorded what actually changed." />
+  <meta property="og:image" content="https://edoardodusi.com/blog/2026/mcp-vs-rest-measured-og.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Is stateless MCP just REST? I ran 180 tests to find out" />
+  <meta property="article:published_time" content="2026-10-26T00:00:00.000Z" />
+  <meta property="article:modified_time" content="2026-10-26T00:00:00.000Z" />
+  <meta property="article:author" content="https://edoardodusi.com/" />
+  <meta name="author" content="Edoardo Dusi" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Is stateless MCP just REST? I ran 180 tests to find out" />
+  <meta name="twitter:description" content="The July 2026 MCP spec dropped sessions, and the internet decided the argument was over. I exposed one backend as both a stateless MCP server and a plain REST API, gave both to the same agent, and recorded what actually changed." />
+  <meta name="twitter:image" content="https://edoardodusi.com/blog/2026/mcp-vs-rest-measured-og.png" />
+  <meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#121213" media="(prefers-color-scheme: dark)" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/icon-16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180.png" />
+  <link rel="alternate" type="application/rss+xml" title="Edoardo Dusi's Blog RSS Feed" href="https://edoardodusi.com/blog/rss.xml" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Is stateless MCP just REST? I ran 180 tests to find out",
+    "image": "https://edoardodusi.com/blog/2026/mcp-vs-rest-measured-og.png",
+    "datePublished": "2026-10-26T00:00:00.000Z",
+    "dateModified": "2026-10-26T00:00:00.000Z",
+    "description": "The July 2026 MCP spec dropped sessions, and the internet decided the argument was over. I exposed one backend as both a stateless MCP server and a plain REST API, gave both to the same agent, and recorded what actually changed.",
+    "inLanguage": "en",
+    "url": "https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html",
+    "mainEntityOfPage": "https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html",
+    "author": {
+      "@type": "Person",
+      "name": "Edoardo Dusi",
+      "jobTitle": "Senior Developer Advocate",
+      "url": "https://edoardodusi.com"
+    }
+  }
+  </script>
+  <script>
+    (function () {
+      var stored = new URLSearchParams(location.search).get('theme') || localStorage.getItem('theme');
+      var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    })();
+  </script>
+  <link rel="stylesheet" href="/main.css?v21" />
+  <link rel="stylesheet" href="/syntax.css" />
+  
+  <style>
+    /* --- Reading typography -------------------------------------------------
+       Set from readability research rather than taste:
+         · Literata for the body — commissioned for long-form screen reading.
+         · 19px, inside the 18–20px band that measurably helps long-form.
+         · line-height 1.7, comfortably above the WCAG 2.2 floor of 1.5.
+         · 66ch measure, the documented sweet spot (50–75 acceptable).
+       The measure is applied to the text elements, NOT the container, so code
+       blocks, tables and images still get the full column width.
+    --------------------------------------------------------------------- */
+    .blog-content {
+      --measure: 66ch;
+      font-family: "Literata", Charter, "Bitstream Charter", Georgia, serif;
+      font-size: 1.1875rem;
+      line-height: 1.7;
+      font-synthesis: none;
+    }
+
+    .blog-content > p,
+    .blog-content > ul,
+    .blog-content > ol,
+    .blog-content > blockquote,
+    .blog-content > h2,
+    .blog-content > h3,
+    .blog-content > h4 {
+      max-width: var(--measure);
+    }
+
+    /* Hanging punctuation and better break choices where supported. */
+    .blog-content > p { text-wrap: pretty; }
+
+    /* Minimal Markdown styling */
+    /* Section headings share the article title's display face (Anton, the logo
+       face). Left in sentence case rather than uppercase — post headings run
+       long, and Anton's condensed caps get hard to read at that length. */
+    .blog-content h2, .blog-content h3, .blog-content h4 {
+      font-family: var(--display);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: 0.002em;
+      /* The article body also carries .section, whose h2 rule uppercases.
+         Undo it explicitly — post headings are sentences, not labels. */
+      text-transform: none;
+    }
+    .blog-content h2 { font-size: 2.15rem; margin: 3.25rem 0 1.1rem; }
+    .blog-content h3 { font-size: 1.5rem; margin: 2.5rem 0 0.85rem; }
+    .blog-content h4 { font-size: 1.2rem; margin: 2rem 0 0.75rem; }
+    .blog-content p { margin-bottom: 1.4em; }
+    .blog-content a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+    .blog-content a:hover { text-decoration-color: var(--accent); }
+    .blog-content code { background: var(--line); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.85em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .blog-content pre { margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; background: #282936; position: relative; }
+    .copy-code-btn { position: absolute; top: 8px; right: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: #e9e9f4; border-radius: 4px; padding: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; opacity: 0.55; z-index: 2; }
+    .blog-content pre:hover .copy-code-btn, .copy-code-btn:focus-visible { opacity: 1; }
+    .copy-code-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .copy-code-btn.copied { color: #00f769; background: rgba(0, 247, 105, 0.1); }
+    .blog-content pre code { padding: 1.25rem; display: block; overflow-x: auto; font-size: 0.82em; line-height: 1.55; background: transparent; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.25) transparent; }
+    /* Wide lines scroll; a fade on the right edge says so. main.js toggles the
+       classes, and the fade goes once the reader reaches the end. */
+    .blog-content pre.is-scrollable::after {
+      content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 3rem;
+      background: linear-gradient(90deg, rgba(40, 41, 54, 0), #282936);
+      pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .blog-content pre.is-scrollable.at-end::after { opacity: 0; }
+    .blog-content ul, .blog-content ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    .blog-content li { margin-bottom: 0.5rem; }
+    .blog-content blockquote { border-left: 3px solid var(--accent); padding-left: 1.25rem; font-style: italic; color: var(--muted); margin-bottom: 1.5rem; }
+    .blog-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem 0; }
+    /* Brand yellow can't be text on paper, so it works as a highlighter instead. */
+    .blog-content mark { background: var(--marker); color: var(--marker-fg); padding: 0.05em 0.25em; border-radius: 2px; }
+
+    /* Tables: horizontal rules only, generous breathing room, scrollable on narrow screens. */
+    .blog-content .table-wrap { margin: 3rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .blog-content table {
+      width: 100%;
+      min-width: 26rem;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+    .blog-content thead th {
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      padding: 0 1rem 0.7rem 0;
+      border-bottom: 1px solid var(--fg);
+      white-space: nowrap;
+    }
+    .blog-content tbody td {
+      padding: 0.85rem 1rem 0.85rem 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-variant-numeric: tabular-nums;
+    }
+    .blog-content tbody tr:last-child td { border-bottom: none; }
+    .blog-content tbody tr:hover td { background: var(--accent-soft); }
+    .blog-content th:last-child, .blog-content td:last-child { padding-right: 0; }
+    .blog-content tbody td:first-child { color: var(--fg); font-weight: 500; }
+    .blog-content table code { font-size: 0.85em; }
+    #progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: transparent; z-index: 1000; }
+    #progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.1s; }
+    
+    .blog-content pre::before {
+      content: attr(data-language);
+      position: absolute; top: 0; left: 1.25rem; font-size: 0.7rem; text-transform: uppercase;
+      font-weight: 600; letter-spacing: 0.1em; color: var(--faint); padding: 0.3rem 0; pointer-events: none;
+    }
+    .blog-content pre code { padding-top: 2.2rem; }
+    
+    /* Tags are labels, not links (there are no tag pages), so they read as
+       quiet chips rather than hashtags that promise a click. */
+    .article-tags { list-style: none; margin-top: 1rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .article-tags .tag { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding: 0.15rem 0.5rem; border: 1px solid var(--line); }
+
+    /* Post titles are sentences: sentence case and a smaller step than the
+       uppercase page heroes, so a long title stays readable. */
+    .hero h1.post-title {
+      text-transform: none;
+      font-size: clamp(2.3rem, 6vw, 3.6rem);
+      line-height: 1.04;
+      letter-spacing: 0.002em;
+    }
+    .post-meta { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    .back-link { text-decoration: none; color: inherit; }
+    .back-link:hover { color: var(--accent); }
+
+    .post-cover { margin: -1rem 0 2.5rem; }
+    .post-cover img { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+    /* --- End of post: author card and neighbours ----------------------- */
+    .author-card {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      margin: 1rem 0 2rem; padding: 1.4rem;
+      border: 1px solid var(--line); border-left: 4px solid var(--marker);
+      background: var(--card);
+    }
+    .author-card img { flex: none; width: 4.5rem; height: 4.5rem; display: block; }
+    .author-name { font-weight: 600; }
+    .author-name a { text-decoration: none; }
+    .author-card .p-note { color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+    .author-links { margin-top: 0.6rem; font-size: 0.88rem; }
+    .author-links a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .author-links a:hover { text-decoration: underline; }
+
+    .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
+    .post-nav-link {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding: 1rem 1.2rem; border: 1px solid var(--line);
+      text-decoration: none; transition: border-color 0.15s ease;
+    }
+    .post-nav-link:hover, .post-nav-link:focus-visible { border-color: var(--accent); color: inherit; }
+    .post-nav-link .card-title { font-weight: 600; line-height: 1.35; }
+    .post-nav-link.newer { text-align: right; grid-column: 2; }
+
+    @media (max-width: 640px) {
+      .author-card { flex-direction: column; }
+      .post-nav { grid-template-columns: 1fr; }
+      .post-nav-link.newer { grid-column: 1; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <header class="site-head">
+    <nav class="site-nav" aria-label="Sections">
+      <a class="brand" href="/">edo</a>
+      <div id="nav-links" class="nav-links">
+        <a href="/blog/">Blog</a>
+        <a href="/#work">Work</a>
+        <a href="/#podcast">Podcast</a>
+        <a href="/#speaking">Speaking</a>
+        <a href="/#writing">Writing</a>
+        <a href="/#guests">Guest</a>
+        <a href="/#projects">Side</a>
+        <a class="nav-cta" href="/speaker/">Invite me to speak</a>
+      </div>
+      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line class="bar bar-1" x1="4" y1="6" x2="20" y2="6"/>
+          <line class="bar bar-2" x1="4" y1="12" x2="20" y2="12"/>
+          <line class="bar bar-3" x1="4" y1="18" x2="20" y2="18"/>
+        </svg>
+      </button>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch color theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="top">
+    <article class="h-entry">
+      <header class="hero reveal">
+        <p class="kicker"><a class="back-link" href="/blog/">&larr; Back to blog</a></p>
+        <h1 class="p-name post-title">Is stateless MCP just REST? I ran 180 tests to find out</h1>
+        <p class="post-meta"><time class="dt-published" datetime="2026-10-26T00:00:00.000Z">October 26, 2026</time> &middot; 12 min read</p>
+        <ul class="article-tags" aria-label="Tags"><li class="tag">AI</li><li class="tag">Agents</li><li class="tag">MCP</li><li class="tag">API</li></ul>
+      </header>
+
+      
+
+      <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
+        <p>In July 2026 the Model Context Protocol <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">dropped sessions</a>. The handshake is gone, the <code>Mcp-Session-Id</code> header is gone, and every request now stands on its own. Within a week the internet did what the internet does, compressing that change into a slogan: MCP is dead, REST won, it was always just REST with extra steps.</p>
+<p>In the <a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog">2026-07-28 MCP spec</a>, <code>tools/list</code> no longer varies per connection, and a server that needs cross-call state now mints an explicit handle and passes it back as an ordinary tool argument. In other words, a stateless MCP server is now a list of tool names with JSON schemas, presented to the model, which emits a tool call that the host dispatches.</p>
+<p>Say that out loud and the REST comparison writes itself. Maybe even the slogan. A REST API is <em>also</em> stateless HTTP.</p>
+<p>I always loved that &quot;computer scientist&quot; has the word <strong>scientist</strong> in it, so I want proof and measurements, even for silly slogans. I found no measurement, so I built one.</p>
+<p>I took a single backend and exposed it twice, once as a stateless MCP server and once as a plain REST API, handed both to the same agent with the same tasks, and recorded what changed across 180 runs. I&#39;m surprised that the result is less dramatic than the slogan and actually more useful: on a small tool surface the two are a tie, and on a realistic one they diverge for one structural reason each.</p>
+<p>I&#39;m not here to tell you &quot;which protocol is better&quot;. But I will tell you that these two carry the <strong>same information in different places</strong>. MCP puts the tool surface in front of the model on every turn. REST puts the contract in front of the model once, then leans on a single generic HTTP call. That difference in placement is the whole ballgame, and it is measurable.</p>
+<p>I&#39;m giving you the data, the harness, and a way to make a decision based on your case, not your mood.</p>
+<h2>The experiment</h2>
+<p>I wanted any difference I measured to be the shape of the contract instead of the business logic. There is exactly one backend, a classic demo: a small store with products, inventory, orders and customers, that answers the same way every run.</p>
+<p>Two interfaces wrap that same backend over the same six operations:</p>
+<ul>
+<li><strong>MCP</strong> is modeled as native tool use on <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html">Amazon Bedrock&#39;s Converse API</a>, because this is exactly the stateless MCP shape: the model receives tool names and JSON schemas every turn and emits a <code>toolUse</code> block that the host dispatches</li>
+<li><strong>REST</strong> gives the model one tool, <code>http_request</code>, plus an OpenAPI-style contract in the system prompt, that is read once. The model constructs the path itself. This interface also implements a real <code>ETag</code> and <code>304 Not Modified</code> cache, because conditional reads are the one thing REST can express that MCP tool use currently cannot</li>
+</ul>
+<p>I gave both the same set of tasks: a simple lookup, a two-hop (order to customer name), an aggregate across a customer&#39;s orders, a missing-information recovery (an order that does not exist), a conditional (can I order an out-of-stock item?), and a repeated read that I use to test caching.</p>
+<p>The setup:</p>
+<ul>
+<li>Model: Claude Haiku 4.5 on Amazon Bedrock, <code>eu-central-1</code>, temperature 0. I picked this small, fast model because it keeps the sandbox cost down, and a smaller model is the harder test: it is quicker to fumble a schema or burn tokens, so a difference between the two interfaces shows up instead of being hidden by a frontier model&#39;s reasoning</li>
+<li>Five trials per task per interface, so thirty runs each per condition</li>
+<li>Metrics per run: success, input and output tokens, latency, round-trips, tool calls, cache hits. A round-trip here is one model turn, so a task that makes a single tool call and then answers counts as two</li>
+</ul>
+<h2>Result 1: on a small surface, it is a tie</h2>
+<p>With six tools, the internet slogan seems to be correct!</p>
+<p><em>Six tools, five trials per task, thirty runs per interface.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>MCP</th>
+<th>REST</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Success rate</td>
+<td>100%</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Avg total tokens</td>
+<td>2,838</td>
+<td>2,867</td>
+</tr>
+<tr>
+<td>Avg input tokens</td>
+<td>2,705</td>
+<td>2,692</td>
+</tr>
+<tr>
+<td>Median latency</td>
+<td>2,116 ms</td>
+<td>2,070 ms</td>
+</tr>
+<tr>
+<td>Avg round-trips</td>
+<td>2.5</td>
+<td>2.5</td>
+</tr>
+<tr>
+<td>Cache hits (304)</td>
+<td>0</td>
+<td>5</td>
+</tr>
+</tbody></table></div>
+<p>You can see we have the same correctness, number of round-trips, token counts and latency. If you have a handful of tools, the choice between a small MCP server and a small REST contract is just a matter of taste, not efficiency. But look at that <code>Cache hits</code> column...I&#39;ll come back to it.</p>
+<h2>Result 2: the schema tax is real, and it scales</h2>
+<p>Then I changed the one thing I figured was about to matter: the API surface size. I ran the whole suite again with twenty-four extra endpoints, modeling a realistic store API with roughly thirty operations. On the MCP side those are <em>twenty-four more tool schemas</em>. On the REST side they are <em>twenty-four more lines in a contract the model reads once</em>.</p>
+<p>Let&#39;s see how that changed our bill:</p>
+<p><em>Thirty tools, five trials per task, thirty runs per interface.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>MCP</th>
+<th>REST</th>
+<th>Delta</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Success rate</td>
+<td>100%</td>
+<td>100%</td>
+<td>tie</td>
+</tr>
+<tr>
+<td>Avg total tokens</td>
+<td>6,558</td>
+<td>4,231</td>
+<td><strong>MCP +35%</strong></td>
+</tr>
+<tr>
+<td>Avg input tokens</td>
+<td>6,406</td>
+<td>4,038</td>
+<td><strong>MCP +37%</strong></td>
+</tr>
+<tr>
+<td>Median latency</td>
+<td>1,996 ms</td>
+<td>1,810 ms</td>
+<td>MCP +9%</td>
+</tr>
+<tr>
+<td>Avg round-trips</td>
+<td>2.67</td>
+<td>2.67</td>
+<td>tie</td>
+</tr>
+</tbody></table></div>
+<p>Again, same success rate and same round-trips, but <strong>35% more tokens</strong>. The reason is simple: a stateless MCP server re-sends every tool schema on every turn, so the model pays for the full catalog every time, even if it doesn&#39;t use every tool. REST&#39;s single <code>http_request</code> primitive does not grow when the API does, because the contract is only read once.</p>
+<p>Per task, the gap is remarkable:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Task</th>
+<th>MCP input tokens</th>
+<th>REST input tokens</th>
+<th>MCP overhead</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>order_status</td>
+<td>4,673</td>
+<td>2,850</td>
+<td>+1,823</td>
+</tr>
+<tr>
+<td>customer_total</td>
+<td>4,732</td>
+<td>2,910</td>
+<td>+1,822</td>
+</tr>
+<tr>
+<td>missing_order</td>
+<td>4,647</td>
+<td>2,805</td>
+<td>+1,842</td>
+</tr>
+<tr>
+<td>order_customer</td>
+<td>7,181</td>
+<td>4,500</td>
+<td>+2,681</td>
+</tr>
+<tr>
+<td>repeat_read</td>
+<td>7,318</td>
+<td>4,687</td>
+<td>+2,631</td>
+</tr>
+<tr>
+<td>stock_mech</td>
+<td>9,884</td>
+<td>6,475</td>
+<td>+3,409</td>
+</tr>
+</tbody></table></div>
+<p>Roughly 1,800 extra input tokens for a one-call task, and more for multi-call tasks, because the schema tax is paid <strong>once per round-trip</strong>. The more the agent has to go back to the tools, the more times it re-reads the whole catalog.</p>
+<p>To be fair, this is the worst case for MCP and the best case for REST. Prompt caching on the provider side, and filtering the tool list down to what a task plausibly needs, both cut this cost. But neither is free and neither is automatic, and the structural fact remains that MCP&#39;s token cost is a function of surface size in a way REST&#39;s is not.</p>
+<p>This is my measurement, so I invite you to test on your own setup and challenge my findings.</p>
+<h2>Result 3: where REST wins outright</h2>
+<p>The <code>repeat_read</code> task asks the agent to read an order, report the total, then read it again to confirm it is unchanged. This is deliberate, to test caching.</p>
+<p>The REST agent read the order, got an <code>ETag</code>, and on the second read sent <code>If-None-Match</code> with that tag. The server answered <code>304 Not Modified</code> with an empty body, and the agent reused the value it already had. Five cache hits in five trials. The MCP agent could not do this, because MCP tool use has no standard notion of a conditional read or a revalidation header. It called the tool again and paid for the full result a second time. No cache, baby!</p>
+<p>The boring and old HTTP protocol with its caching mechanisms, conditional requests and revalidation, easily beats the shiny new MCP protocol on re-reads, because when your agent calls a tool it always starts from scratch, even when reading multiple times data that rarely changes.</p>
+<h2>Result 4: where MCP wins outright</h2>
+<p>So far everything seems to be in favour of REST. I tried to build a scenario that should favour MCP.</p>
+<p>Picture a strict, unfamiliar API. A reporting endpoint whose region codes are <code>EUR</code>, <code>NAM</code> and <code>APC</code>, not <code>EU</code> or <code>Europe</code> or <code>EMEA</code>. Metric names you cannot guess from a description. A date format that must be exactly <code>YYYY-MM-DD</code>. The kind of API an agent meets for the first time.</p>
+<p>MCP gives the model its normal typed tool schema: the enum values are correctly spelled, the format is declared, and the host validates the call before it is dispatched. REST gets what people actually write for a terse API: a contract that names the endpoint and the parameters but does not enumerate every valid value. The agent has to infer them. I asked both, in plain language, questions like &quot;what was net revenue in Europe on 2026-10-20?&quot;</p>
+<p><em>Strict API, one operation, six trials per task, thirty runs per interface.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>MCP</th>
+<th>REST (terse contract)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Final success</td>
+<td>100%</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><strong>First-call success</strong></td>
+<td><strong>100%</strong></td>
+<td><strong>0%</strong></td>
+</tr>
+<tr>
+<td>Malformed calls</td>
+<td>0</td>
+<td>30 (one per task)</td>
+</tr>
+<tr>
+<td>Avg tool calls</td>
+<td>1.0</td>
+<td>2.0</td>
+</tr>
+<tr>
+<td>Avg round-trips</td>
+<td>2.0</td>
+<td>3.0</td>
+</tr>
+<tr>
+<td>Avg total tokens</td>
+<td>1,841</td>
+<td>3,041 (<strong>+65%</strong>)</td>
+</tr>
+<tr>
+<td>Median latency</td>
+<td>1,720 ms</td>
+<td>3,006 ms (<strong>+75%</strong>)</td>
+</tr>
+</tbody></table></div>
+<p>Both get there in the end, so this is not about MCP being &quot;more correct.&quot; It is about getting it right the first time. The MCP agent mapped &quot;Europe&quot; to <code>EUR</code> on the first call, every single run, because the schema told it the allowed values up front. The REST agent guessed <code>EU</code> or <code>Europe</code>, got a <code>400</code>, read the error, and fixed it on the second call, every single run. That self-correction is impressive, but it costs an extra round-trip, 65% more tokens and nearly double the latency, every time.</p>
+<p>To be honest, I could make REST match MCP by pasting the full JSON schema, enums and all, into the contract. But that is exactly the per-turn token tax that made MCP lose Result 2. The schema has to live somewhere. MCP puts it in front of the model and pays for it every turn. A terse REST contract saves those tokens right up until the API is strict enough that the saving turns into a wrong guess. No free lunch, only a choice about where you spend.</p>
+<h2>What this does not measure</h2>
+<p>A benchmark you cannot poke holes in is a benchmark that is lying! Here are mine.</p>
+<p>This is a very controlled scenario. One model, one small domain, six tasks. There is no authentication, no streaming, no <em>human in the loop</em>. The &quot;wire bytes&quot; I counted are a proxy, not a packet capture. Latency differences stayed inside the noise and were dominated by the model, not the protocol, so do not read the 9% as a protocol verdict.</p>
+<p>And to be very clear, this measures per-request efficiency, which is not why most people reach for MCP. MCP&#39;s actual value is the ecosystem. Write one server and any agent can use it, without a previous knowledge of the contract. That portability is real and this harness does not price it. REST&#39;s hidden cost is the opposite: every consumer writes and maintains its own client, based on a shared contract.</p>
+<p>Efficiency is one axis, but it&#39;s not the only one.</p>
+<p>There is also a safety axis, which this harness does not touch: a stateless, per-request boundary is easier to reason about than a long-lived session, with authorization checked per call and no sticky server-side state to ride. That deserves its own measurement, so I&#39;m thinking of a follow-up here.</p>
+<h2>How to decide</h2>
+<p>Is stateless MCP just REST with extra steps? No.</p>
+<p>It is REST with no cache, but with a typed, self-describing discovery layer bolted on top. Batteries included. Which one you want depends on your specific scenario:</p>
+<ul>
+<li><strong>Small, stable, portable tool set</strong> that you want many agents to reuse: MCP wins. The schema tax is small and the ecosystem payoff is real.</li>
+<li><strong>Strict or unfamiliar API</strong> with non-obvious parameters: MCP wins again. Typed, validated discovery means the agent calls correctly on the first try instead of guessing, failing, and retrying.</li>
+<li><strong>Large, loose API with cache-heavy reads and a single consumer</strong>: a cache-friendly REST contract is the better developer experience. You avoid the schema tax and you get <code>304</code>s for free.</li>
+<li><strong>Somewhere in between</strong>: measure it. That is the whole point of the harness.</li>
+</ul>
+<p>There is no winner-take-all. It is a trade-off about where the cost of describing your API lives, and now I hope it is a trade-off you can put some numbers on.</p>
+<h2>Run it yourself</h2>
+<p>The full harness is on GitHub: <a href="https://github.com/edodusi/mcp-vs-rest-bench">mcp-vs-rest-bench</a>. The backend, the two interfaces, the task suite, the runner, and the raw results JSON. It runs against Amazon Bedrock on demand, so there is nothing to tear down, no standing infrastructure, and a full five-trial sweep costs a few cents of Haiku tokens. Point it at your own stack, your own tasks, your own model, and settle your own version of the argument.</p>
+<p>Don&#39;t decide with vibes. Decide with data.</p>
+
+      </div>
+
+      <aside class="author-card p-author h-card" aria-label="About the author">
+        <img class="u-photo" src="/img/edo-avatar-192.jpg" alt="" width="72" height="72" loading="lazy" decoding="async" />
+        <div>
+          <p class="author-name"><a class="p-name u-url" href="/">Edoardo Dusi</a></p>
+          <p class="p-note">Senior Developer Advocate at AWS. I write about the web, cloud, AI and the developer ecosystem, and speak at conferences across Europe.</p>
+          <p class="author-links"><a href="/blog/rss.xml">Subscribe via RSS</a> &middot; <a href="/speaker/">Invite me to speak</a> &middot; <a href="https://www.linkedin.com/in/edoardodusi/" rel="me noopener">LinkedIn</a></p>
+        </div>
+      </aside>
+
+      <nav class="post-nav" aria-label="More posts"><a class="post-nav-link older" href="/blog/2026/error-while-dexing.html"><span class="card-label">&larr; Older</span><span class="card-title">“Error while dexing”: how an Android build failure led me to a dying SSD</span></a><span></span></nav>
+    </article>
+  </main>
+
+  <footer class="site-foot">
+    <div class="foot-row">
+      <p>&copy; <span id="year">2026</span> Edoardo Dusi. No rights reserved.</p>
+      <div class="foot-links">
+        <a href="/speaker/">Speaker kit</a>
+        <a href="/blog/rss.xml">RSS</a>
+        <a id="contact-link" data-u="hello" data-d="edoardodusi.com" href="#">Get in touch</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/main.js?v7" defer></script>
+</body>
+</html>

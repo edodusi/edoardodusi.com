@@ -5,8 +5,16 @@
   <link>https://edoardodusi.com/blog</link>
   <description>Articles, thoughts, and updates from Edoardo Dusi</description>
   <language>en-us</language>
-  <lastBuildDate>Tue, 13 Oct 2026 14:32:40 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 26 Oct 2026 15:55:34 GMT</lastBuildDate>
   <atom:link href="https://edoardodusi.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+  
+    <item>
+      <title><![CDATA[Is stateless MCP just REST? I ran 180 tests to find out]]></title>
+      <link>https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html</link>
+      <description><![CDATA[The July 2026 MCP spec dropped sessions, and the internet decided the argument was over. I exposed one backend as both a stateless MCP server and a plain REST API, gave both to the same agent, and recorded what actually changed.]]></description>
+      <pubDate>Mon, 26 Oct 2026 00:00:00 GMT</pubDate>
+      <guid>https://edoardodusi.com/blog/2026/mcp-vs-rest-measured.html</guid>
+    </item>
   
     <item>
       <title><![CDATA[“Error while dexing”: how an Android build failure led me to a dying SSD]]></title>
