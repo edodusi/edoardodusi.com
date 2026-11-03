@@ -267,26 +267,29 @@
       <header class="hero reveal">
         <p class="kicker"><a class="back-link" href="/blog/">&larr; Back to blog</a></p>
         <h1 class="p-name post-title">Is stateless MCP just REST? I ran 180 tests to find out</h1>
-        <p class="post-meta"><time class="dt-published" datetime="2026-10-26T00:00:00.000Z">October 26, 2026</time> &middot; 12 min read</p>
+        <p class="post-meta"><time class="dt-published" datetime="2026-10-26T00:00:00.000Z">October 26, 2026</time> &middot; 14 min read</p>
         <ul class="article-tags" aria-label="Tags"><li class="tag">AI</li><li class="tag">Agents</li><li class="tag">MCP</li><li class="tag">API</li></ul>
       </header>
 
       
 
       <div class="section reveal blog-content e-content" style="border-top: none; padding-top: 0;">
-        <p>In July 2026 the Model Context Protocol <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">dropped sessions</a>. The handshake is gone, the <code>Mcp-Session-Id</code> header is gone, and every request now stands on its own. Within a week the internet did what the internet does, compressing that change into a slogan: MCP is dead, REST won, it was always just REST with extra steps.</p>
+        <blockquote>
+<p><strong>Update, 2026-11-03:</strong> an earlier version of this post said REST reads its contract only once. That&#39;s wrong for this harness: Converse is stateless, so the REST contract is re-sent on every call, exactly like the MCP schemas. A reader, <a href="https://dev.to/izgorodin/comment/3jfi4">izgorodin</a>, spotted it and proposed a control experiment. I ran it, and the results are in the new section after Result 4. The 35% gap is real, but it comes from how dense the description is, not from where it sits.</p>
+</blockquote>
+<p>In July 2026 the Model Context Protocol <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">dropped sessions</a>. The handshake is gone, the <code>Mcp-Session-Id</code> header is gone, and every request now stands on its own. Within a week the internet did what the internet does, compressing that change into a slogan: MCP is dead, REST won, it was always just REST with extra steps.</p>
 <p>In the <a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog">2026-07-28 MCP spec</a>, <code>tools/list</code> no longer varies per connection, and a server that needs cross-call state now mints an explicit handle and passes it back as an ordinary tool argument. In other words, a stateless MCP server is now a list of tool names with JSON schemas, presented to the model, which emits a tool call that the host dispatches.</p>
 <p>Say that out loud and the REST comparison writes itself. Maybe even the slogan. A REST API is <em>also</em> stateless HTTP.</p>
 <p>I always loved that &quot;computer scientist&quot; has the word <strong>scientist</strong> in it, so I want proof and measurements, even for silly slogans. I found no measurement, so I built one.</p>
 <p>I took a single backend and exposed it twice, once as a stateless MCP server and once as a plain REST API, handed both to the same agent with the same tasks, and recorded what changed across 180 runs. I&#39;m surprised that the result is less dramatic than the slogan and actually more useful: on a small tool surface the two are a tie, and on a realistic one they diverge for one structural reason each.</p>
-<p>I&#39;m not here to tell you &quot;which protocol is better&quot;. But I will tell you that these two carry the <strong>same information in different places</strong>. MCP puts the tool surface in front of the model on every turn. REST puts the contract in front of the model once, then leans on a single generic HTTP call. That difference in placement is the whole ballgame, and it is measurable.</p>
+<p>I&#39;m not here to tell you &quot;which protocol is better&quot;. But I will tell you that these two carry the <strong>same information in different shapes</strong>. MCP puts the tool surface in front of the model as typed schemas. REST puts it there as a contract in prose, then leans on a single generic HTTP call. Both go out on every turn, so the difference is how many tokens each one spends saying the same thing, and it is measurable.</p>
 <p>I&#39;m giving you the data, the harness, and a way to make a decision based on your case, not your mood.</p>
 <h2>The experiment</h2>
 <p>I wanted any difference I measured to be the shape of the contract instead of the business logic. There is exactly one backend, a classic demo: a small store with products, inventory, orders and customers, that answers the same way every run.</p>
 <p>Two interfaces wrap that same backend over the same six operations:</p>
 <ul>
 <li><strong>MCP</strong> is modeled as native tool use on <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html">Amazon Bedrock&#39;s Converse API</a>, because this is exactly the stateless MCP shape: the model receives tool names and JSON schemas every turn and emits a <code>toolUse</code> block that the host dispatches</li>
-<li><strong>REST</strong> gives the model one tool, <code>http_request</code>, plus an OpenAPI-style contract in the system prompt, that is read once. The model constructs the path itself. This interface also implements a real <code>ETag</code> and <code>304 Not Modified</code> cache, because conditional reads are the one thing REST can express that MCP tool use currently cannot</li>
+<li><strong>REST</strong> gives the model one tool, <code>http_request</code>, plus an OpenAPI-style contract in the system prompt. The model constructs the path itself. This interface also implements a real <code>ETag</code> and <code>304 Not Modified</code> cache, because conditional reads are the one thing REST can express that MCP tool use currently cannot</li>
 </ul>
 <p>I gave both the same set of tasks: a simple lookup, a two-hop (order to customer name), an aggregate across a customer&#39;s orders, a missing-information recovery (an order that does not exist), a conditional (can I order an out-of-stock item?), and a repeated read that I use to test caching.</p>
 <p>The setup:</p>
@@ -339,7 +342,7 @@
 </tbody></table></div>
 <p>You can see we have the same correctness, number of round-trips, token counts and latency. If you have a handful of tools, the choice between a small MCP server and a small REST contract is just a matter of taste, not efficiency. But look at that <code>Cache hits</code> column...I&#39;ll come back to it.</p>
 <h2>Result 2: the schema tax is real, and it scales</h2>
-<p>Then I changed the one thing I figured was about to matter: the API surface size. I ran the whole suite again with twenty-four extra endpoints, modeling a realistic store API with roughly thirty operations. On the MCP side those are <em>twenty-four more tool schemas</em>. On the REST side they are <em>twenty-four more lines in a contract the model reads once</em>.</p>
+<p>Then I changed the one thing I figured was about to matter: the API surface size. I ran the whole suite again with twenty-four extra endpoints, modeling a realistic store API with roughly thirty operations. On the MCP side those are <em>twenty-four more tool schemas</em>. On the REST side they are <em>twenty-four more lines in the contract</em>.</p>
 <p>Let&#39;s see how that changed our bill:</p>
 <p><em>Thirty tools, five trials per task, thirty runs per interface.</em></p>
 <div class="table-wrap"><table>
@@ -382,7 +385,7 @@
 <td>tie</td>
 </tr>
 </tbody></table></div>
-<p>Again, same success rate and same round-trips, but <strong>35% more tokens</strong>. The reason is simple: a stateless MCP server re-sends every tool schema on every turn, so the model pays for the full catalog every time, even if it doesn&#39;t use every tool. REST&#39;s single <code>http_request</code> primitive does not grow when the API does, because the contract is only read once.</p>
+<p>Again, same success rate and same round-trips, but <strong>35% more tokens</strong>. The reason is simple: a stateless MCP server re-sends every tool schema on every turn, so the model pays for the full catalog every time, even if it doesn&#39;t use every tool. REST re-sends its contract every turn too, but a one-line contract entry costs about a third of a JSON tool schema, so it grows much more slowly.</p>
 <p>Per task, the gap is remarkable:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -431,7 +434,7 @@
 </tr>
 </tbody></table></div>
 <p>Roughly 1,800 extra input tokens for a one-call task, and more for multi-call tasks, because the schema tax is paid <strong>once per round-trip</strong>. The more the agent has to go back to the tools, the more times it re-reads the whole catalog.</p>
-<p>To be fair, this is the worst case for MCP and the best case for REST. Prompt caching on the provider side, and filtering the tool list down to what a task plausibly needs, both cut this cost. But neither is free and neither is automatic, and the structural fact remains that MCP&#39;s token cost is a function of surface size in a way REST&#39;s is not.</p>
+<p>To be fair, this is the worst case for MCP and the best case for REST. Prompt caching on the provider side, and filtering the tool list down to what a task plausibly needs, both cut this cost. But neither is free and neither is automatic, and the structural fact remains that MCP&#39;s token cost grows with surface size about three times faster than a terse REST contract&#39;s does.</p>
 <p>This is my measurement, so I invite you to test on your own setup and challenge my findings.</p>
 <h2>Result 3: where REST wins outright</h2>
 <p>The <code>repeat_read</code> task asks the agent to read an order, report the total, then read it again to confirm it is unchanged. This is deliberate, to test caching.</p>
@@ -488,6 +491,56 @@
 </tbody></table></div>
 <p>Both get there in the end, so this is not about MCP being &quot;more correct.&quot; It is about getting it right the first time. The MCP agent mapped &quot;Europe&quot; to <code>EUR</code> on the first call, every single run, because the schema told it the allowed values up front. The REST agent guessed <code>EU</code> or <code>Europe</code>, got a <code>400</code>, read the error, and fixed it on the second call, every single run. That self-correction is impressive, but it costs an extra round-trip, 65% more tokens and nearly double the latency, every time.</p>
 <p>To be honest, I could make REST match MCP by pasting the full JSON schema, enums and all, into the contract. But that is exactly the per-turn token tax that made MCP lose Result 2. The schema has to live somewhere. MCP puts it in front of the model and pays for it every turn. A terse REST contract saves those tokens right up until the API is strict enough that the saving turns into a wrong guess. No free lunch, only a choice about where you spend.</p>
+<h2>Update: the control run</h2>
+<p>After the post went out, <a href="https://dev.to/izgorodin/comment/3jfi4">izgorodin</a> read my results files more carefully than I did! The REST arm&#39;s input tokens <em><strong>grow with every turn</strong></em>, so the contract is not read once. Converse is stateless, my harness doesn&#39;t use prompt caching, and the system prompt goes out on every call exactly like the tool config. Both interfaces <em><strong>pay for their description on every turn</strong></em>.</p>
+<p>So where does the 35% come from? izgorodin proposed the experiment that answers it: give REST the same thirty JSON schemas MCP gets, pasted into its contract. If its tokens land next to MCP, the gap is about the <em>format</em> of the description, not the <em>protocol</em>.</p>
+<p>I added that third arm and ran all three in the same session: 180 more runs, 100% success everywhere.</p>
+<p><em>Average input tokens per run, five trials per task, thirty runs per arm.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>MCP</th>
+<th>REST (terse)</th>
+<th>REST (with schemas)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>6 tools</td>
+<td>2,705</td>
+<td>2,692</td>
+<td>3,550</td>
+</tr>
+<tr>
+<td>30 tools</td>
+<td>6,406</td>
+<td>4,038</td>
+<td>7,542</td>
+</tr>
+</tbody></table></div>
+<p>The cleaner number is what the extra operations cost on every model call. Going from six to thirty operations adds:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Extra input tokens per call</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>REST (terse contract lines)</td>
+<td>+422</td>
+</tr>
+<tr>
+<td>MCP (tool schemas)</td>
+<td>+1,307</td>
+</tr>
+<tr>
+<td>REST (same schemas in the contract)</td>
+<td>+1,384</td>
+</tr>
+</tbody></table></div>
+<p>Same schemas, same cost. REST is even slightly more expensive, because its contract also carries the paths and the HTTP notes. Round-trips are identical, and both REST arms still get their five <code>304</code>s.</p>
+<p>So the schema tax is real, and any interface pays it: it&#39;s the price of a dense description, charged on every turn. A JSON schema costs about three times a one-line contract entry, and that ratio is the whole 35%. It also turns Result 2 and Result 4 into one knob: how many tokens you spend describing your API on every call, and what you get back for them. A terse contract buys you cheap turns and wrong first guesses. A typed schema buys you first-call success at three times the price.</p>
 <h2>What this does not measure</h2>
 <p>A benchmark you cannot poke holes in is a benchmark that is lying! Here are mine.</p>
 <p>This is a very controlled scenario. One model, one small domain, six tasks. There is no authentication, no streaming, no <em>human in the loop</em>. The &quot;wire bytes&quot; I counted are a proxy, not a packet capture. Latency differences stayed inside the noise and were dominated by the model, not the protocol, so do not read the 9% as a protocol verdict.</p>
@@ -503,7 +556,7 @@
 <li><strong>Large, loose API with cache-heavy reads and a single consumer</strong>: a cache-friendly REST contract is the better developer experience. You avoid the schema tax and you get <code>304</code>s for free.</li>
 <li><strong>Somewhere in between</strong>: measure it. That is the whole point of the harness.</li>
 </ul>
-<p>There is no winner-take-all. It is a trade-off about where the cost of describing your API lives, and now I hope it is a trade-off you can put some numbers on.</p>
+<p>There is no winner-take-all. It is a trade-off about how much you spend describing your API, and what you get back for it, and now I hope it is a trade-off you can put some numbers on.</p>
 <h2>Run it yourself</h2>
 <p>The full harness is on GitHub: <a href="https://github.com/edodusi/mcp-vs-rest-bench">mcp-vs-rest-bench</a>. The backend, the two interfaces, the task suite, the runner, and the raw results JSON. It runs against Amazon Bedrock on demand, so there is nothing to tear down, no standing infrastructure, and a full five-trial sweep costs a few cents of Haiku tokens. Point it at your own stack, your own tasks, your own model, and settle your own version of the argument.</p>
 <p>Don&#39;t decide with vibes. Decide with data.</p>
