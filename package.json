@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "node build.js",
+    "preview": "rm -rf .preview && cp -R docs .preview && DRAFTS=1 OUT_DIR=.preview node build.js && echo 'Preview: http://127.0.0.1:8091/blog/' && python3 -m http.server 8091 --bind 127.0.0.1 --directory .preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

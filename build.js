@@ -18,7 +18,10 @@ marked.use(markedHighlight({
 }));
 
 const contentDir = path.join(__dirname, 'content/blog');
-const outputDir = path.join(__dirname, 'docs/blog');
+// Site root the build writes into. CI uses the default (docs/, served by GitHub
+// Pages); `npm run preview` sets OUT_DIR=.preview so local builds never touch docs/.
+const siteDir = path.join(__dirname, process.env.OUT_DIR || 'docs');
+const outputDir = path.join(siteDir, 'blog');
 const templatesDir = path.join(__dirname, 'templates');
 
 if (!fs.existsSync(outputDir)) {
@@ -26,7 +29,7 @@ if (!fs.existsSync(outputDir)) {
 }
 
 const cssSource = path.join(__dirname, 'node_modules/highlight.js/styles/base16/dracula.css');
-const cssDest = path.join(__dirname, 'docs/syntax.css');
+const cssDest = path.join(siteDir, 'syntax.css');
 fs.copyFileSync(cssSource, cssDest);
 
 const layoutTemplate = fs.readFileSync(path.join(templatesDir, 'blog-layout.html'), 'utf-8');
@@ -127,13 +130,13 @@ async function build() {
   // Static pages get the same card. Their copy lives here, next to the post
   // cards, so a headline change on a page means a one-line edit below.
   const staticCards = [
-    { file: 'docs/og.png', topline: 'edoardodusi.com', title: 'Turning hard tech into talks developers remember', meta: 'Talks  ·  Writing  ·  Podcast' },
-    { file: 'docs/blog/og.png', topline: 'edoardodusi.com/blog', title: 'Unfiltered thoughts on the web, cloud, AI and code', meta: 'Blog  ·  RSS' },
-    { file: 'docs/speaker/og.png', topline: 'edoardodusi.com/speaker', title: 'Invite me to speak', meta: 'Keynotes  ·  Talks  ·  Workshops  ·  EN / IT' },
+    { file: 'og.png', topline: 'edoardodusi.com', title: 'Turning hard tech into talks developers remember', meta: 'Talks  ·  Writing  ·  Podcast' },
+    { file: 'blog/og.png', topline: 'edoardodusi.com/blog', title: 'Unfiltered thoughts on the web, cloud, AI and code', meta: 'Blog  ·  RSS' },
+    { file: 'speaker/og.png', topline: 'edoardodusi.com/speaker', title: 'Invite me to speak', meta: 'Keynotes  ·  Talks  ·  Workshops  ·  EN / IT' },
   ];
   for (const card of staticCards) {
-    fs.mkdirSync(path.dirname(path.join(__dirname, card.file)), { recursive: true });
-    fs.writeFileSync(path.join(__dirname, card.file), await renderOgCard(card));
+    fs.mkdirSync(path.dirname(path.join(siteDir, card.file)), { recursive: true });
+    fs.writeFileSync(path.join(siteDir, card.file), await renderOgCard(card));
   }
 
   // Drafts are skipped unless DRAFTS=1, so a post can be pushed before it's
@@ -380,7 +383,7 @@ ${posts.map(p => {
 `;
   fs.writeFileSync(path.join(docsDir, 'llms-full.txt'), llmsFullTxt);
 
-  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, RSS feed, sitemap, and llms.txt in docs/`);
+  console.log(`\n✅ Build complete! Generated ${posts.length} blog posts, custom OG Images, RSS feed, sitemap, and llms.txt in ${path.relative(__dirname, siteDir)}/`);
 }
 
 build().catch(console.error);

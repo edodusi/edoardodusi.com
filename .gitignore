@@ -4,3 +4,5 @@ inter.woff
 roboto-mono.woff
 anton.woff
 .DS_Store
+# Local draft preview (npm run preview); docs/ is written only by CI
+.preview/

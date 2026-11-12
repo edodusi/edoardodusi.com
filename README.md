@@ -66,7 +66,7 @@ docs/                    # GitHub Pages root (served at edoardodusi.com)
    lang: "it"                  # sets <html lang>; defaults to "en"
    cover: "/img/posts/x.jpg"   # image shown under the title
    cover_alt: "Description"    # alt text for the cover
-   draft: true                 # skipped by the build; preview with `DRAFTS=1 npm run build`
+   draft: true                 # skipped by the build; preview with `npm run preview`
    ```
 
 3. Push to `master`. The build runs on CI and publishes the post.
@@ -113,7 +113,11 @@ necessary to preview changes before pushing.
 
 ## Local preview
 
-No tooling required for the static pages — open `docs/index.html` directly, or
+`npm run preview` copies `docs/` to `.preview/` (git-ignored), builds every post
+into it including drafts, and serves it at http://127.0.0.1:8091/blog/. It never
+writes to `docs/`, which only CI regenerates, so drafts can't leak into a commit.
+
+For the static pages alone, no tooling is required: open `docs/index.html` directly, or
 serve the folder:
 
 ```sh
