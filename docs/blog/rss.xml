@@ -5,8 +5,16 @@
   <link>https://edoardodusi.com/blog</link>
   <description>Articles, thoughts, and updates from Edoardo Dusi</description>
   <language>en-us</language>
-  <lastBuildDate>Fri, 13 Nov 2026 17:58:10 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 16 Nov 2026 14:41:41 GMT</lastBuildDate>
   <atom:link href="https://edoardodusi.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+  
+    <item>
+      <title><![CDATA[LLMs are compressors. So I chatted with gzip]]></title>
+      <link>https://edoardodusi.com/blog/2026/gzip-chat.html</link>
+      <description><![CDATA[I chatted with gzip, for real. It answers questions about me with zero learned weights, and it says “i don’t know” when a question surprises it too much. To see how that is possible, we need to understand why compressing and predicting are the same job.]]></description>
+      <pubDate>Mon, 16 Nov 2026 00:00:00 GMT</pubDate>
+      <guid>https://edoardodusi.com/blog/2026/gzip-chat.html</guid>
+    </item>
   
     <item>
       <title><![CDATA[Is stateless MCP just REST? I ran 180 tests to find out]]></title>
