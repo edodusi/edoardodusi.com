@@ -1,9 +1,9 @@
 ---
 title: "LLMs are compressors. So I chatted with gzip"
-date: "2026-11-12"
+date: "2026-11-16"
 tags: ["Compression", "LLM", "gzip", "AWS Lambda"]
 excerpt: "I chatted with gzip, for real. It answers questions about me with zero learned weights, and it says \"i don't know\" when a question surprises it too much. To see how that is possible, we need to understand why compressing and predicting are the same job."
-draft: true
+draft: false
 ---
 
 I had a conversation with a chatbot this morning:
